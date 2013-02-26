@@ -8,18 +8,25 @@
 #define log(...) if ( DEBUG ) { printf("%d:\t", __LINE__); printf( __VA_ARGS__ ); printf("\n"); }
 #define strEqual(a, b) !strcmp(a, b)
 
-#define SIZEofBUFF 12
+#define BUFF_SIZE 12
 
 typedef struct{
 	int ssn;
-	char FirstName[SIZEofBUFF];
-	char LastName[SIZEofBUFF];
+	char FirstName[BUFF_SIZE];
+	char LastName[BUFF_SIZE];
 	int  income;
 } MyRecord;
 
 struct MyRecord {
 	int ssn;
-	char FirstName[SIZEofBUFF];
-	char LastName[SIZEofBUFF];
+	char FirstName[BUFF_SIZE];
+	char LastName[BUFF_SIZE];
 	int  income;
 };
+
+typedef struct {
+	char filename[BUFF_SIZE];
+	int numWorkers;
+	int sortAttr;
+	char sortProgram[BUFF_SIZE];
+} Coordinator;

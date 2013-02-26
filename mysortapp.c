@@ -15,6 +15,8 @@ Due March 07, 2013
 /*************************************/
 
 static void catch_signal( int );
+Coordinator* initCoordinator( char*, int, int, char*);
+void writeFile( char* );
 void loadFile( char* );
 
 /*************************************/
@@ -25,6 +27,17 @@ static void catch_signal( int signum ) {
     printf("Received SIGUSR1!\n");
   }
 } // catch_signal
+
+Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char* sortProgram  ) {
+  Coordinator *coord =  (Coordinator*) malloc( sizeof( Coordinator )+1 );
+  strcpy( coord->filename, filename );
+  coord->numWorkers = numWorkers;
+  coord->sortAttr = sortAttr;
+  strcpy( coord->sortProgram, sortProgram );
+  println(" initCoordinator ");
+  loadFile( filename );
+  return coord;
+} // initCoordinator
 
 void printRecord( MyRecord* record ) {
   println(" -- record -- ");
@@ -42,7 +55,6 @@ void writeFile( char* filename ) {
 } // writeFile
 
 void loadFile( char* filename ) {
-
   FILE  *fp = NULL;
   char separator;
   if ( (fp = fopen( filename, "r" )) == NULL ) {
@@ -57,7 +69,6 @@ void loadFile( char* filename ) {
     } // end while 
     fclose(fp);
   }
-
 } // loadFile
 
 int main( int argc, char *argv[] ) {
@@ -72,53 +83,42 @@ int main( int argc, char *argv[] ) {
     return EXIT_FAILURE;
   }
 
-  int numFlags = argc-1, numWorkers, attrNumber;
-  char flag[2];
-  char flagValue [MAX_ARG_SIZE];
-  char numWorkersStr [MAX_ARG_SIZE];
-  char executableName [MAX_ARG_SIZE];
-  char attrNumberStr [MAX_ARG_SIZE];
-  char type [MAX_ARG_SIZE];
-  char order [MAX_ARG_SIZE];
-  char outputFile [MAX_ARG_SIZE];
-
-  loadFile( "records100.txt" );
-  writeFile( "testoutput.txt" );
+  int numFlags = argc-1, numWorkers, sortAttr;
+  char flag[2]; char flagValue[MAX_ARG_SIZE];
+  char filename[MAX_ARG_SIZE];
+  char executableName[MAX_ARG_SIZE]; char type[MAX_ARG_SIZE]; char order[MAX_ARG_SIZE]; char outputFile[MAX_ARG_SIZE];
 
   if ( numFlags < 2 ) {
     log( "No commands provided." );
-  } else { // commands present
+    numWorkers = 2; // some defaults for debugging/testing
+    sortAttr = 2;
+    strcpy( executableName, "testExe" );
+    strcpy( filename, "records100.txt" );
+  } else { // flags are  present
     if ( numFlags % 2 != 0 ) {
       println( "Malformed flags. Please re-enter." );
     } else {
-      log( "Argc: %d", argc );
-
-      // parse commands
+      
       int i;
       for ( i = 1; i < argc; i+=2 ) {
         strcpy( flag, argv[i] );
-        if ( strEqual(flag, "-k") ) {
-          strcpy( numWorkersStr, argv[i+1] );
-          numWorkers = atoi( numWorkersStr );
-          log(  "numWorkers as int is %i", numWorkers );
-        } else if ( strEqual(flag, "-e") ) {
-          strcpy( executableName, argv[i+1] );
-        } else if ( strEqual(flag, "-a") ) {
-          strcpy( attrNumberStr, argv[i+1] );
-          attrNumber = atoi( attrNumberStr );
-          log(  "attrNumber as int is %i", attrNumber );
-        } else if ( strEqual(flag, "-t") ) {
-          strcpy( type, argv[i+1] );
-        } else if ( strEqual(flag, "-o") ) {
-          strcpy( order, argv[i+1] );
-        } else if ( strEqual(flag, "-s") ) {
-          strcpy( outputFile, argv[i+1] );
-        } else {
+        strcpy( flagValue, argv[i+1] );
+
+        if ( strEqual(flag, "-k") ) {  numWorkers = atoi( flagValue );  }
+        else if ( strEqual(flag, "-e") ) {  strcpy( executableName, flagValue  ); } 
+        else if ( strEqual(flag, "-a") ) {  sortAttr = atoi( flagValue );  } 
+        else if ( strEqual(flag, "-t") ) {  strcpy( type, flagValue ); } 
+        else if ( strEqual(flag, "-o") ) {  strcpy( order, flagValue );  } 
+        else if ( strEqual(flag, "-s") ) {  strcpy( outputFile, flagValue ); } 
+        else {
           println( "Flag %s not recognized.", flag  );
         }
       }
     }
   }
+
+  initCoordinator( filename, numWorkers, sortAttr, executableName );
+  // writeFile( "testoutput.txt" );
 
   return 0;
  
