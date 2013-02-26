@@ -14,7 +14,10 @@ Due March 07, 2013
 
 /*************************************/
 
+void printSorter( Sorter* );
+
 static void catch_signal( int );
+void deploySorters( Coordinator* );
 Coordinator* initCoordinator( char*, int, int, char*);
 void writeFile( char* );
 void loadFile( char* );
@@ -22,30 +25,59 @@ void loadFile( char* );
 /*************************************/
 
 
+void printSorter( Sorter* sorter ) {
+  printf("rangeBegin: %d - rangeEnd: %d \n", sorter->rangeBegin, sorter->rangeEnd);
+} // printSorter
+
 static void catch_signal( int signum ) {
   if ( signum == SIGUSR1 ) {
     printf("Received SIGUSR1!\n");
   }
 } // catch_signal
 
+void deploySorters( Coordinator* coord ) {
+  //coord = ( filename, numWorkers, sortAttr, executableName );
+  long lSize;
+  int numOfrecords, i;
+  FILE* fp = fopen( coord->filename, "r" );
+  if ( fp==NULL ) {
+    printf("Cannot open file\n");
+    return;
+  }
+  
+  fseek (fp, 0, SEEK_END); // check number of records
+  lSize = ftell( fp );
+  rewind( fp );
+  numOfrecords = (int) lSize/sizeof( MyRecord );
+
+  log("Records found in file %d \n", numOfrecords);
+  int recsPerWorker = numOfrecords / coord->numWorkers; 
+  log("Records per worker is %d  \n", recsPerWorker );
+
+  for ( i=0; i<coord->numWorkers; i++ ) {
+    Sorter* sorter = (Sorter*) malloc( sizeof(Sorter)+1 );
+    strcpy( sorter->filename, coord->filename );
+    sorter->rangeBegin = (recsPerWorker*i);
+    sorter->rangeEnd = (recsPerWorker*(i+1)-1);
+    sorter->sortAttr = coord->sortAttr;
+    strcpy( sorter->sortProgram, coord->sortProgram );
+    strcpy( sorter->sortAttrType, "test" ); // TODO -sortAttrType
+    printSorter( sorter );
+  }
+
+} // deploySorters
+
 Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char* sortProgram  ) {
+
   Coordinator *coord =  (Coordinator*) malloc( sizeof( Coordinator )+1 );
   strcpy( coord->filename, filename );
   coord->numWorkers = numWorkers;
   coord->sortAttr = sortAttr;
   strcpy( coord->sortProgram, sortProgram );
   println(" initCoordinator ");
-  loadFile( filename );
+  // loadFile( filename );
   return coord;
 } // initCoordinator
-
-void printRecord( MyRecord* record ) {
-  println(" -- record -- ");
-  println(" -- %d -- ", record->ssn);
-  println(" -- %s -- ", record->FirstName);
-  println(" -- %s -- ", record->LastName);
-  println(" -- %d -- ", record->income);
-} // printRecord
 
 void writeFile( char* filename ) {
   FILE *file;
@@ -94,6 +126,7 @@ int main( int argc, char *argv[] ) {
     sortAttr = 2;
     strcpy( executableName, "testExe" );
     strcpy( filename, "records100.txt" );
+
   } else { // flags are  present
     if ( numFlags % 2 != 0 ) {
       println( "Malformed flags. Please re-enter." );
@@ -117,7 +150,9 @@ int main( int argc, char *argv[] ) {
     }
   }
 
-  initCoordinator( filename, numWorkers, sortAttr, executableName );
+  Coordinator* coord = initCoordinator( filename, numWorkers, sortAttr, executableName );
+
+  deploySorters( coord );
   // writeFile( "testoutput.txt" );
 
   return 0;

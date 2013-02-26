@@ -9,6 +9,7 @@
 #define strEqual(a, b) !strcmp(a, b)
 
 #define BUFF_SIZE 12
+#define FILENAME_BUFF_SIZE 32
 
 typedef struct{
 	int ssn;
@@ -25,8 +26,16 @@ struct MyRecord {
 };
 
 typedef struct {
-	char filename[BUFF_SIZE];
+	char filename[FILENAME_BUFF_SIZE];
 	int numWorkers;
 	int sortAttr;
 	char sortProgram[BUFF_SIZE];
 } Coordinator;
+
+typedef struct {
+	char filename[FILENAME_BUFF_SIZE];
+	int rangeBegin, rangeEnd;
+	int sortAttr;
+	char sortAttrType[BUFF_SIZE];
+	char sortProgram[BUFF_SIZE];
+} Sorter;
