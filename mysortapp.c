@@ -49,13 +49,11 @@ void loadFile( char* filename ) {
     println("Unknown file");
     exit(1);
   } else {
-    while ( !feof(fp)  ) {
+    while ( !feof(fp) ) {
+      // struct MyRecord* record = (struct MyRecord*) malloc( sizeof( struct MyRecord)+1 );
       MyRecord record;
-      // MyRecord record = MyRecord* malloc( sizeof(MyRecord)+1 );
-
-      fread(&record, sizeof(record), 1, fp);
+      fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
       printf("%d %s %s %d \n", record.ssn, record.LastName, record.FirstName, record.income);
-      
     } // end while 
     fclose(fp);
   }
