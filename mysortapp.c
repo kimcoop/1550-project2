@@ -10,9 +10,27 @@ Due March 07, 2013
 #include <stdlib.h>
 #include <string.h>
 #include  "my_header.h"
+#include <signal.h>
+
+static void catch_signal( int signum ) {
+  if ( signum == SIGUSR1 ) {
+    printf("Received SIGUSR1!\n");
+  }
+}
+
 
 int main( int argc, char *argv[] ) {
   
+  if ( signal(SIGUSR1, catch_signal) == SIG_ERR ) {
+    fputs("An error occurred while setting a signal handler.\n", stderr);
+    return EXIT_FAILURE;
+  }
+  println("Raising the interactive attention signal.");
+  if ( raise(SIGUSR1) != 0 ) {
+    fputs("Error raising the signal.\n", stderr);
+    return EXIT_FAILURE;
+  }
+
   int numFlags = argc-1, numWorkers, attrNumber;
   char flag[2];
   char flagValue [MAX_ARG_SIZE];
@@ -58,6 +76,6 @@ int main( int argc, char *argv[] ) {
     }
   }
 
-  return 0;
+  //return 0;
  
 }
