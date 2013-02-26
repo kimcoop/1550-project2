@@ -9,15 +9,58 @@ Due March 07, 2013
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include  "my_header.h"
 #include <signal.h>
+#include  "my_header.h"
+
+/*************************************/
+
+static void catch_signal( int );
+void loadFile( char* );
+
+/*************************************/
+
 
 static void catch_signal( int signum ) {
   if ( signum == SIGUSR1 ) {
     printf("Received SIGUSR1!\n");
   }
-}
+} // catch_signal
 
+void printRecord( MyRecord* record ) {
+  println(" -- record -- ");
+  println(" -- %d -- ", record->ssn);
+  println(" -- %s -- ", record->FirstName);
+  println(" -- %s -- ", record->LastName);
+  println(" -- %d -- ", record->income);
+} // printRecord
+
+void writeFile( char* filename ) {
+  FILE *file;
+  file = fopen( filename, "a+" ); // append file (add text to a file or create a file if it does not exist.
+  fprintf( file, "%s", "This is just an example :)" ); // write
+  fclose( file );
+} // writeFile
+
+void loadFile( char* filename ) {
+
+  FILE  *fp = NULL;
+  char separator;
+  if ( (fp = fopen( filename, "r" )) == NULL ) {
+    println("Unknown file");
+    exit(1);
+  } else {
+    while ( !feof(fp)  ) {
+      MyRecord record;
+      // MyRecord record = MyRecord* malloc( sizeof(MyRecord)+1 );
+
+      fread(&record, sizeof(record), 1, fp);
+      printf("%d %s %s %d \n", record.ssn, record.LastName, record.FirstName, record.income);
+      
+    } // end while 
+    fclose(fp);
+  }
+
+} // loadFile
 
 int main( int argc, char *argv[] ) {
   
@@ -40,6 +83,9 @@ int main( int argc, char *argv[] ) {
   char type [MAX_ARG_SIZE];
   char order [MAX_ARG_SIZE];
   char outputFile [MAX_ARG_SIZE];
+
+  loadFile( "records100.txt" );
+  writeFile( "testoutput.txt" );
 
   if ( numFlags < 2 ) {
     log( "No commands provided." );
@@ -76,6 +122,6 @@ int main( int argc, char *argv[] ) {
     }
   }
 
-  //return 0;
+  return 0;
  
 }
