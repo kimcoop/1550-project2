@@ -4,8 +4,10 @@ KAC162@pitt.edu
 CS1550
 Project 2
 Due March 07, 2013
+
 */
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,10 +18,10 @@ Due March 07, 2013
 
 void printSorter( Sorter* );
 
-static void catch_signal( int );
+static void my_handler( int );
 void deploySorters( Coordinator* );
 Coordinator* initCoordinator( char*, int, int, char*);
-void writeFile( char* );
+void writeFile( char*, char* );
 void loadFile( char* );
 
 /*************************************/
@@ -29,11 +31,11 @@ void printSorter( Sorter* sorter ) {
   printf("rangeBegin: %d - rangeEnd: %d \n", sorter->rangeBegin, sorter->rangeEnd);
 } // printSorter
 
-static void catch_signal( int signum ) {
+static void my_handler( int signum ) {
   if ( signum == SIGUSR1 ) {
     printf("Received SIGUSR1!\n");
   }
-} // catch_signal
+} // my_handler
 
 void deploySorters( Coordinator* coord ) {
   //coord = ( filename, numWorkers, sortAttr, executableName );
@@ -50,9 +52,16 @@ void deploySorters( Coordinator* coord ) {
   rewind( fp );
   numOfrecords = (int) lSize/sizeof( MyRecord );
 
-  log("Records found in file %d \n", numOfrecords);
   int recsPerWorker = numOfrecords / coord->numWorkers; 
+  log("Records found in file %d \n", numOfrecords);
   log("Records per worker is %d  \n", recsPerWorker );
+
+  char c[BUFSIZ];
+  int fd;
+  int n;
+  long int nBytes = (long) recsPerWorker;
+  pid_t pid;
+  int child_status;
 
   for ( i=0; i<coord->numWorkers; i++ ) {
     Sorter* sorter = (Sorter*) malloc( sizeof(Sorter)+1 );
@@ -62,6 +71,51 @@ void deploySorters( Coordinator* coord ) {
     sorter->sortAttr = coord->sortAttr;
     strcpy( sorter->sortProgram, coord->sortProgram );
     strcpy( sorter->sortAttrType, "test" ); // TODO -sortAttrType
+
+    if (( fd = open(coord->filename, O_RDONLY, 0 )) < 0 ){
+      perror("Bad filename.");
+      exit(3);
+    }
+
+    if ( signal(SIGUSR1, my_handler ) == SIG_ERR ) {
+      perror("Could not set a handler for SIGUSR1");
+      exit(4);
+    }
+
+    pid = fork();
+    if ( pid < 0 ) {
+      perror("fork");
+      exit(6);
+    }
+
+    if ( pid == 0 ) {
+      log("Child (%d) about to pause()\n", (int)getpid());
+      pause();
+      log("Child's turn %d!\n", (int)getpid());
+      lseek(fd, 0L, SEEK_SET);
+      writeFile( OUTFILE, "\n---PARENT WRITING---\n" );
+      while((n = read(fd, c, nBytes)) != 0) {
+        writeFile( OUTFILE, c );
+      }
+      int rc = 37;
+      log("Child exiting (status = %d (0x%.2X))\n", rc, rc);
+      exit(rc);
+    } else {
+      log("Parent's turn! (pid = %d, kid = %d)\n", (int)getpid(), (int)pid);
+      writeFile( OUTFILE, "\n---CHILD WRITING---\n" );
+
+      while (( n = read(fd, c, nBytes)) != 0 ) {
+        writeFile( OUTFILE, c );
+      }
+      log("Parent sleeping\n");
+      sleep(1);
+      log("Parent sending signal to child\n");
+      kill(pid, SIGUSR1);
+      log("Parent waiting for child\n");
+      int corpse = wait(&child_status);
+      log("waiting over: pid = %d, status = 0x%.4X\n", corpse, child_status);
+    }
+
     printSorter( sorter );
   }
 
@@ -79,10 +133,10 @@ Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char
   return coord;
 } // initCoordinator
 
-void writeFile( char* filename ) {
+void writeFile( char* filename, char* str ) {
   FILE *file;
   file = fopen( filename, "a+" ); // append file (add text to a file or create a file if it does not exist.
-  fprintf( file, "%s", "This is just an example :)" ); // write
+  fprintf( file, "%s", str ); // write
   fclose( file );
 } // writeFile
 
@@ -104,16 +158,6 @@ void loadFile( char* filename ) {
 } // loadFile
 
 int main( int argc, char *argv[] ) {
-  
-  if ( signal(SIGUSR1, catch_signal) == SIG_ERR ) {
-    fputs("An error occurred while setting a signal handler.\n", stderr);
-    return EXIT_FAILURE;
-  }
-  println("Raising the interactive attention signal.");
-  if ( raise(SIGUSR1) != 0 ) {
-    fputs("Error raising the signal.\n", stderr);
-    return EXIT_FAILURE;
-  }
 
   int numFlags = argc-1, numWorkers, sortAttr;
   char flag[2]; char flagValue[MAX_ARG_SIZE];
@@ -125,7 +169,7 @@ int main( int argc, char *argv[] ) {
     numWorkers = 2; // some defaults for debugging/testing
     sortAttr = 2;
     strcpy( executableName, "testExe" );
-    strcpy( filename, "records100.txt" );
+    strcpy( filename, INPUTFILE );
 
   } else { // flags are  present
     if ( numFlags % 2 != 0 ) {
@@ -153,7 +197,6 @@ int main( int argc, char *argv[] ) {
   Coordinator* coord = initCoordinator( filename, numWorkers, sortAttr, executableName );
 
   deploySorters( coord );
-  // writeFile( "testoutput.txt" );
 
   return 0;
  

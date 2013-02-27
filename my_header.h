@@ -10,6 +10,8 @@
 
 #define BUFF_SIZE 12
 #define FILENAME_BUFF_SIZE 32
+#define OUTFILE "testoutput.txt"
+#define INPUTFILE "records5.txt"
 
 typedef struct{
 	int ssn;
