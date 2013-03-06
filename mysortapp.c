@@ -199,24 +199,27 @@ int main( int argc, char *argv[] ) {
 
   // deploySorters( coord );
 
+
   printf("in main\n");
   int m_pipe[2];
   pid_t pid;
-  if ( pipe(m_pipe) < 0 ) {
-      println("Failed to create master pipe");
-  }
-  if ( (pid = fork()) < 0 ) {
-      println("Failed to fork master");
-  } else if ( pid == 0 ) {
+  if (pipe(m_pipe) < 0)
+      err_error("Failed to create master pipe");
+  if ((pid = fork()) < 0)
+      err_error("Failed to fork master");
+  else if (pid == 0)
+  {
       printf("pid==0\n");
-      close( m_pipe[READ] );
-      sortMergeFile( m_pipe[WRITE], INPUTFILE );
-      close( m_pipe[WRITE] );
-  } else {   
-      printf("process child\n");
-      close( m_pipe[WRITE] );
-      convertToString( m_pipe[READ], stdout );
-      close( m_pipe[READ] );
+      close(m_pipe[READ]);
+      // sortMergeFiles(m_pipe[WRITE], argc - 1, &argv[1]);
+      sortOneFile( m_pipe[WRITE], INPUTFILE );
+      close(m_pipe[WRITE]);
+  }
+  else
+  {   printf("process child\n");
+      close(m_pipe[WRITE]);
+      convertToString(m_pipe[READ], stdout);
+      close(m_pipe[READ]);
   }
 
   return 0;

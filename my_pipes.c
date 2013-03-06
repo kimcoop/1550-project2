@@ -6,33 +6,9 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include "my_header.h"
+
 #include "errors.c"
 
-int main(int argc, char **argv) {
-
-    printf("in main\n");
-    int m_pipe[2];
-    pid_t pid;
-    if (pipe(m_pipe) < 0)
-        err_error("Failed to create master pipe");
-    if ((pid = fork()) < 0)
-        err_error("Failed to fork master");
-    else if (pid == 0)
-    {
-        printf("pid==0\n");
-        close(m_pipe[READ]);
-        sortMergeFiles(m_pipe[WRITE], argc - 1, &argv[1]);
-        close(m_pipe[WRITE]);
-    }
-    else
-    {   printf("process child\n");
-        close(m_pipe[WRITE]);
-        convertToString(m_pipe[READ], stdout);
-        close(m_pipe[READ]);
-    }
-    return 0;
-}
 
 static void convertToString(int fd, FILE *fp)
 {
