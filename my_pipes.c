@@ -6,33 +6,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include "my_header.h"
-#include "errors.c"
 
-int main( int argc, char **argv ) {
-
-    printf("in main\n");
-    int m_pipe[2];
-    pid_t pid;
-    if ( pipe(m_pipe) < 0 ) {
-        println("Failed to create master pipe");
-    }
-    if ( (pid = fork()) < 0 ) {
-        println("Failed to fork master");
-    } else if ( pid == 0 ) {
-        printf("pid==0\n");
-        close(m_pipe[READ]);
-        sortMergeFiles( m_pipe[WRITE], argc - 1, &argv[1] );
-        close(m_pipe[WRITE]);
-    } else {   
-        printf("process child\n");
-        close(m_pipe[WRITE]);
-        convertToString(m_pipe[READ], stdout);
-        close(m_pipe[READ]);
-    }
-
-    return 0;
-}
 
 static void convertToString(int fd, FILE *fp) {
 
@@ -93,55 +67,56 @@ static void mergeFiles(int fd_in1, int fd_in2, int fd_out)
     }
 }
 
+static void sortMergeFile(int fd, char *filename) {
+   sortFile(fd, filename);
+}
+
 static void sortMergeFiles(int fd, int number, char **names)
 {
-    assert(number >= 0);
-    if (number == 0)
-        return;
-    else if (number == 1)
-        sortOneFile(fd, names[0]);
-    else
-    {
-        println("Non-Leaf: processing %d files (%s .. %s)", number, names[0], names[number-1]);
-        int mid = number / 2;
-        int l_pipe[2];
-        int r_pipe[2];
-        pid_t l_pid;
-        pid_t r_pid;
-        if (pipe(l_pipe) < 0 || pipe(r_pipe) < 0)
-            perror("Failed to create pipes");
-        if ((l_pid = fork()) < 0)
-            perror("Failed to fork left child");
-        else if (l_pid == 0)
-        {
-            close(l_pipe[READ]);
-            close(r_pipe[READ]);
-            close(r_pipe[WRITE]);
-            sortMergeFiles(l_pipe[WRITE], mid, names);
-            close(l_pipe[WRITE]);
-            exit(0);
-        }
-        else if ((r_pid = fork()) < 0)
-            perror("Failed to fork right child");
-        else if (r_pid == 0)
-        {
-            close(r_pipe[READ]);
-            close(l_pipe[READ]);
-            close(l_pipe[WRITE]);
-            sortMergeFiles(r_pipe[WRITE], number - mid, names + mid);
-            close(r_pipe[WRITE]);
-            exit(0);
-        }
-        else
-        {
-            close(l_pipe[WRITE]);
-            close(r_pipe[WRITE]);
-            mergeFiles(l_pipe[READ], r_pipe[READ], fd);
-            close(l_pipe[READ]);
-            close(r_pipe[READ]);
-            println("Non-Leaf: finished %d files (%s .. %s)", number, names[0], names[number-1]);
-        }
-    }
+    // if (number == 1)
+    //     sortFile(fd, names[0]);
+    // else
+    // {
+    //     println("Non-Leaf: processing %d files (%s .. %s)", number, names[0], names[number-1]);
+    //     int mid = number / 2;
+    //     int l_pipe[2];
+    //     int r_pipe[2];
+    //     pid_t l_pid;
+    //     pid_t r_pid;
+    //     if (pipe(l_pipe) < 0 || pipe(r_pipe) < 0)
+    //         perror("Failed to create pipes");
+    //     if ((l_pid = fork()) < 0)
+    //         perror("Failed to fork left child");
+    //     else if (l_pid == 0)
+    //     {
+    //         close(l_pipe[READ]);
+    //         close(r_pipe[READ]);
+    //         close(r_pipe[WRITE]);
+    //         sortMergeFiles(l_pipe[WRITE], mid, names);
+    //         close(l_pipe[WRITE]);
+    //         exit(0);
+    //     }
+    //     else if ((r_pid = fork()) < 0)
+    //         perror("Failed to fork right child");
+    //     else if (r_pid == 0)
+    //     {
+    //         close(r_pipe[READ]);
+    //         close(l_pipe[READ]);
+    //         close(l_pipe[WRITE]);
+    //         sortMergeFiles(r_pipe[WRITE], number - mid, names + mid);
+    //         close(r_pipe[WRITE]);
+    //         exit(0);
+    //     }
+    //     else
+    //     {
+    //         close(l_pipe[WRITE]);
+    //         close(r_pipe[WRITE]);
+    //         mergeFiles(l_pipe[READ], r_pipe[READ], fd);
+    //         close(l_pipe[READ]);
+    //         close(r_pipe[READ]);
+    //         println("Non-Leaf: finished %d files (%s .. %s)", number, names[0], names[number-1]);
+    //     }
+    // }
 }
 
 static void addNumberToArray(int number)
@@ -209,7 +184,7 @@ void freeMem(void)
     free(a_data);
 }
 
-static void sortOneFile(int fd, const char *file)
+static void sortFile(int fd, const char *file)
 {
     println("Leaf: processing file %s", file);
     readFile(file);

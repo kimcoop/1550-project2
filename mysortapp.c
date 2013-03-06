@@ -13,6 +13,7 @@ Due March 07, 2013
 #include <string.h>
 #include <signal.h>
 #include  "my_header.h"
+#include  "my_pipes.c"
 
 /*************************************/
 
@@ -196,7 +197,28 @@ int main( int argc, char *argv[] ) {
 
   Coordinator* coord = initCoordinator( filename, numWorkers, sortAttr, executableName );
 
-  deploySorters( coord );
+  // deploySorters( coord );
+
+  printf("in main\n");
+  int m_pipe[2];
+  pid_t pid;
+  if ( pipe(m_pipe) < 0 ) {
+      println("Failed to create master pipe");
+  }
+  if ( (pid = fork()) < 0 ) {
+      println("Failed to fork master");
+  } else if ( pid == 0 ) {
+      printf("pid==0\n");
+      close(m_pipe[READ]);
+      // sortMergeFiles( m_pipe[WRITE], argc - 1, &argv[1] );
+      sortMergeFile(  m_pipe[WRITE], INPUTFILE  );
+      close(m_pipe[WRITE]);
+  } else {   
+      printf("process child\n");
+      close(m_pipe[WRITE]);
+      convertToString(m_pipe[READ], stdout);
+      close(m_pipe[READ]);
+  }
 
   return 0;
  
