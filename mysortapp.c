@@ -209,15 +209,14 @@ int main( int argc, char *argv[] ) {
       println("Failed to fork master");
   } else if ( pid == 0 ) {
       printf("pid==0\n");
-      close(m_pipe[READ]);
-      // sortMergeFiles( m_pipe[WRITE], argc - 1, &argv[1] );
-      sortMergeFile(  m_pipe[WRITE], INPUTFILE  );
-      close(m_pipe[WRITE]);
+      close( m_pipe[READ] );
+      sortMergeFile( m_pipe[WRITE], INPUTFILE );
+      close( m_pipe[WRITE] );
   } else {   
       printf("process child\n");
-      close(m_pipe[WRITE]);
-      convertToString(m_pipe[READ], stdout);
-      close(m_pipe[READ]);
+      close( m_pipe[WRITE] );
+      convertToString( m_pipe[READ], stdout );
+      close( m_pipe[READ] );
   }
 
   return 0;

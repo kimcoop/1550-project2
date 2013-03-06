@@ -58,3 +58,4 @@ static void sortMergeFile(int, char *);
 static void sortMergeFiles(int, int, char **);
 static void sortFile(int, const char *);
 static void convertToString(int, FILE *);
+static void sortOneFile(int fd, const char *file);
