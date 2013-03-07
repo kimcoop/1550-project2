@@ -38,8 +38,14 @@ void deploySorters( Coordinator* coord ) { //coord = ( filename, numWorkers, sor
   fclose( fp );
 
   if ( numRecsPerSorter > 0 ) {
+    int m_pipe[2];
+    pid_t pid;
+    if ( pipe(m_pipe) < 0 ) {
+      println("Failed to create master pipe");
+    }
+
     int i;
-    for ( i = 0; i < coord->numWorkers; i++ ) {
+    for ( i = 0; i < coord->numWorkers-1; i++ ) {
       Sorter* sorter = (Sorter*) malloc( sizeof(Sorter)+1 );
       strcpy( sorter->filename, coord->filename );
       // sorter->fd = fd; // TODO - have this pass as fd? or filename?
@@ -48,31 +54,23 @@ void deploySorters( Coordinator* coord ) { //coord = ( filename, numWorkers, sor
       sorter->sortAttr = coord->sortAttr;
       strcpy( sorter->sortProgram, coord->sortProgram );
       strcpy( sorter->sortAttrType, "test" ); // TODO -sortAttrType
-      deploySorter( sorter );
+
+      if ( pid = fork() < 0 ) {
+        perror("Failed to fork master");
+      } else if ( pid == 0 ) {
+        println(" IN CHILD PROCESS ");
+        close( m_pipe[WRITE] );
+        convertToString( m_pipe[READ], stdout );
+        close( m_pipe[READ] );
+        deploySorter( sorter );
+      } else  {
+        println(" IN PARENT PROCESS ABOUT TO DEPLOY SORTER ");
+        // close( m_pipe[READ] );
+        // sortOneFile( m_pipe[WRITE], INPUTFILE );
+        // close( m_pipe[WRITE] );
+      }
     }
-  }
-
-  // println("in deploySorters\n");
-  // int m_pipe[2];
-  // pid_t pid;
-  // if (pipe(m_pipe) < 0)
-  //   println("Failed to create master pipe");
-  // if ((pid = fork()) < 0) {
-  //   println("Failed to fork master");
-  // } else if (pid == 0) {
-  //   println(" IN PARENT \n");
-  //   close(m_pipe[READ]);
-  //   sortOneFile( m_pipe[WRITE], INPUTFILE );
-  //   close(m_pipe[WRITE]);
-  // } else  {
-  //   println(" IN CHILD \n");
-  //   close(m_pipe[WRITE]);
-  //   convertToString(m_pipe[READ], stdout);
-  //   close(m_pipe[READ]);
-  // }
-  
-  
-
+  } // numRecsPerSorter > 0
 } // deploySorters
 
 Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char* sortProgram  ) {
