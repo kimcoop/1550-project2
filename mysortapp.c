@@ -14,129 +14,20 @@ Due March 07, 2013
 #include <signal.h>
 #include  "my_header.h"
 #include  "my_pipes.c"
+#include  "coordinator.c"
 
-/*************************************/
-
-void printSorter( Sorter* );
-
-static void my_handler( int );
-void deploySorters( Coordinator* );
-Coordinator* initCoordinator( char*, int, int, char*);
-void writeFile( char*, char* );
-void loadFile( char* );
-
-/*************************************/
-
-
-void printSorter( Sorter* sorter ) {
-  printf("rangeBegin: %d - rangeEnd: %d \n", sorter->rangeBegin, sorter->rangeEnd);
-} // printSorter
 
 static void my_handler( int signum ) {
+  println("in my_handler");
   if ( signum == SIGUSR1 ) {
-    printf("Received SIGUSR1!\n");
+    println("Received SIGUSR1!\n");
   }
 } // my_handler
 
-void deploySorters( Coordinator* coord ) {
-  //coord = ( filename, numWorkers, sortAttr, executableName );
-  long lSize;
-  int numOfrecords, i;
-  FILE* fp = fopen( coord->filename, "r" );
-  if ( fp==NULL ) {
-    printf("Cannot open file\n");
-    return;
-  }
-  
-  fseek (fp, 0, SEEK_END); // check number of records
-  lSize = ftell( fp );
-  rewind( fp );
-  numOfrecords = (int) lSize/sizeof( MyRecord );
-
-  int recsPerWorker = numOfrecords / coord->numWorkers; 
-  log("Records found in file %d \n", numOfrecords);
-  log("Records per worker is %d  \n", recsPerWorker );
-
-  char c[BUFSIZ];
-  int fd;
-  int n;
-  long int nBytes = (long) recsPerWorker;
-  pid_t pid;
-  int child_status;
-
-  for ( i=0; i<coord->numWorkers; i++ ) {
-    Sorter* sorter = (Sorter*) malloc( sizeof(Sorter)+1 );
-    strcpy( sorter->filename, coord->filename );
-    sorter->rangeBegin = (recsPerWorker*i);
-    sorter->rangeEnd = (recsPerWorker*(i+1)-1);
-    sorter->sortAttr = coord->sortAttr;
-    strcpy( sorter->sortProgram, coord->sortProgram );
-    strcpy( sorter->sortAttrType, "test" ); // TODO -sortAttrType
-
-    if (( fd = open(coord->filename, O_RDONLY, 0 )) < 0 ){
-      perror("Bad filename.");
-      exit(3);
-    }
-
-    if ( signal(SIGUSR1, my_handler ) == SIG_ERR ) {
-      perror("Could not set a handler for SIGUSR1");
-      exit(4);
-    }
-
-    pid = fork();
-    if ( pid < 0 ) {
-      perror("fork");
-      exit(6);
-    }
-
-    if ( pid == 0 ) {
-      log("Child (%d) about to pause()\n", (int)getpid());
-      pause();
-      log("Child's turn %d!\n", (int)getpid());
-      lseek(fd, 0L, SEEK_SET);
-      writeFile( OUTFILE, "\n---PARENT WRITING---\n" );
-      while((n = read(fd, c, nBytes)) != 0) {
-        writeFile( OUTFILE, c );
-      }
-      int rc = 37;
-      log("Child exiting (status = %d (0x%.2X))\n", rc, rc);
-      exit(rc);
-    } else {
-      log("Parent's turn! (pid = %d, kid = %d)\n", (int)getpid(), (int)pid);
-      writeFile( OUTFILE, "\n---CHILD WRITING---\n" );
-
-      while (( n = read(fd, c, nBytes)) != 0 ) {
-        writeFile( OUTFILE, c );
-      }
-      log("Parent sleeping\n");
-      sleep(1);
-      log("Parent sending signal to child\n");
-      kill(pid, SIGUSR1);
-      log("Parent waiting for child\n");
-      int corpse = wait(&child_status);
-      log("waiting over: pid = %d, status = 0x%.4X\n", corpse, child_status);
-    }
-
-    printSorter( sorter );
-  }
-
-} // deploySorters
-
-Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char* sortProgram  ) {
-
-  Coordinator *coord =  (Coordinator*) malloc( sizeof( Coordinator )+1 );
-  strcpy( coord->filename, filename );
-  coord->numWorkers = numWorkers;
-  coord->sortAttr = sortAttr;
-  strcpy( coord->sortProgram, sortProgram );
-  println(" initCoordinator ");
-  // loadFile( filename );
-  return coord;
-} // initCoordinator
 
 void writeFile( char* filename, char* str ) {
   FILE *file;
-  file = fopen( filename, "a+" ); // append file (add text to a file or create a file if it does not exist.
+  file = fopen( filename, "a+" ); // append file (add text to a file or create a file if it does not exist)
   fprintf( file, "%s", str ); // write
   fclose( file );
 } // writeFile
@@ -196,31 +87,7 @@ int main( int argc, char *argv[] ) {
   }
 
   Coordinator* coord = initCoordinator( filename, numWorkers, sortAttr, executableName );
-
-  // deploySorters( coord );
-
-
-  printf("in main\n");
-  int m_pipe[2];
-  pid_t pid;
-  if (pipe(m_pipe) < 0)
-      err_error("Failed to create master pipe");
-  if ((pid = fork()) < 0)
-      err_error("Failed to fork master");
-  else if (pid == 0)
-  {
-      printf("pid==0\n");
-      close(m_pipe[READ]);
-      // sortMergeFiles(m_pipe[WRITE], argc - 1, &argv[1]);
-      sortOneFile( m_pipe[WRITE], INPUTFILE );
-      close(m_pipe[WRITE]);
-  }
-  else
-  {   printf("process child\n");
-      close(m_pipe[WRITE]);
-      convertToString(m_pipe[READ], stdout);
-      close(m_pipe[READ]);
-  }
+  deploySorters( coord );
 
   return 0;
  

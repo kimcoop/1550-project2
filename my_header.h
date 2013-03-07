@@ -11,7 +11,7 @@
 #define BUFF_SIZE 12
 #define FILENAME_BUFF_SIZE 32
 #define OUTFILE "testoutput.txt"
-#define INPUTFILE "records_short.txt"
+#define INPUTFILE "records5.txt"
 
 #define READ 0
 #define WRITE 1
@@ -45,6 +45,16 @@ typedef struct {
 	char sortAttrType[BUFF_SIZE];
 	char sortProgram[BUFF_SIZE];
 } Sorter;
+
+static void my_handler( int );
+
+void printSorter( Sorter* );
+void deploySorters( Coordinator* );
+int numRecordsPerSorter( FILE*, int );
+Coordinator* initCoordinator( char*, int, int, char*);
+
+void writeFile( char*, char* );
+void loadFile( char* );
 
 /* ERRORS */
 static int *a_data = 0;
