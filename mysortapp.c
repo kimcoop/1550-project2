@@ -15,14 +15,7 @@ Due March 07, 2013
 #include  "my_header.h"
 #include  "my_pipes.c"
 #include  "coordinator.c"
-
-
-static void my_handler( int signum ) {
-  println("in my_handler");
-  if ( signum == SIGUSR1 ) {
-    println("Received SIGUSR1!\n");
-  }
-} // my_handler
+#include  "sorter.c"
 
 
 void writeFile( char* filename, char* str ) {

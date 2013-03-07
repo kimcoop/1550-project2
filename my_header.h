@@ -1,5 +1,4 @@
 #include	<stdio.h>
-
 #define MAX_ARG_SIZE 200
 #define YES 1
 #define NO 0
@@ -17,50 +16,27 @@
 #define WRITE 1
 #define BUFFER_SIZE 256
 
-typedef struct{
-	int ssn;
-	char FirstName[BUFF_SIZE];
-	char LastName[BUFF_SIZE];
-	int  income;
-} MyRecord;
-
-struct MyRecord {
-	int ssn;
-	char FirstName[BUFF_SIZE];
-	char LastName[BUFF_SIZE];
-	int  income;
-};
-
-typedef struct {
-	char filename[FILENAME_BUFF_SIZE];
-	int numWorkers;
-	int sortAttr;
-	char sortProgram[BUFF_SIZE];
-} Coordinator;
-
-typedef struct {
-	char filename[FILENAME_BUFF_SIZE];
-	int rangeBegin, rangeEnd;
-	int sortAttr;
-	char sortAttrType[BUFF_SIZE];
-	char sortProgram[BUFF_SIZE];
-} Sorter;
+#include "models.h"
 
 static void my_handler( int );
 
 void printSorter( Sorter* );
 void deploySorters( Coordinator* );
-int numRecordsPerSorter( FILE*, int );
+long numRecordsPerSorter( FILE*, int );
 Coordinator* initCoordinator( char*, int, int, char*);
 
 void writeFile( char*, char* );
 void loadFile( char* );
 
-/* ERRORS */
+/* SORTERS */
+void deploySorter( Sorter* );
+
 static int *a_data = 0;
 static int  a_used = 0;
 static int  a_size = 0;
-void readFile(char const *);
+
+/* ERRORS */
+void readFile(char  *);
 void freeMem(void);
 void sortArray(void);
 int  intcmp(void const *n1, void const *n2);
@@ -68,4 +44,4 @@ static void sortMergeFile(int, char *);
 static void sortMergeFiles(int, int, char **);
 static void sortFile(int, const char *);
 static void convertToString(int, FILE *);
-static void sortOneFile(int fd, const char *file);
+// static void sortOneFile(int fd, const char *file);

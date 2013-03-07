@@ -67,69 +67,69 @@ static void mergeFiles(int fd_in1, int fd_in2, int fd_out)
     }
 }
 
-static void sortMergeFiles(int fd, int number, char **names)
-{
-    assert(number >= 0);
-    if (number == 0)
-        return;
-    else if (number == 1)
-        sortOneFile(fd, names[0]);
-    else
-    {
-        println("Non-Leaf: processing %d files (%s .. %s)", number, names[0], names[number-1]);
-        int mid = number / 2;
-        int l_pipe[2];
-        int r_pipe[2];
-        pid_t l_pid;
-        pid_t r_pid;
-        if (pipe(l_pipe) < 0 || pipe(r_pipe) < 0)
-            perror("Failed to create pipes");
-        if ((l_pid = fork()) < 0)
-            perror("Failed to fork left child");
-        else if (l_pid == 0)
-        {
-            close(l_pipe[READ]);
-            close(r_pipe[READ]);
-            close(r_pipe[WRITE]);
-            sortMergeFiles(l_pipe[WRITE], mid, names);
-            close(l_pipe[WRITE]);
-            exit(0);
-        }
-        else if ((r_pid = fork()) < 0)
-            perror("Failed to fork right child");
-        else if (r_pid == 0)
-        {
-            close(r_pipe[READ]);
-            close(l_pipe[READ]);
-            close(l_pipe[WRITE]);
-            sortMergeFiles(r_pipe[WRITE], number - mid, names + mid);
-            close(r_pipe[WRITE]);
-            exit(0);
-        }
-        else
-        {
-            close(l_pipe[WRITE]);
-            close(r_pipe[WRITE]);
-            mergeFiles(l_pipe[READ], r_pipe[READ], fd);
-            close(l_pipe[READ]);
-            close(r_pipe[READ]);
-            println("Non-Leaf: finished %d files (%s .. %s)", number, names[0], names[number-1]);
-        }
-    }
-}
+// static void sortMergeFiles(int fd, int number, char **names)
+// {
+//     assert(number >= 0);
+//     if (number == 0)
+//         return;
+//     else if (number == 1)
+//         sortOneFile(fd, names[0]);
+//     else
+//     {
+//         println("Non-Leaf: processing %d files (%s .. %s)", number, names[0], names[number-1]);
+//         int mid = number / 2;
+//         int l_pipe[2];
+//         int r_pipe[2];
+//         pid_t l_pid;
+//         pid_t r_pid;
+//         if (pipe(l_pipe) < 0 || pipe(r_pipe) < 0)
+//             perror("Failed to create pipes");
+//         if ((l_pid = fork()) < 0)
+//             perror("Failed to fork left child");
+//         else if (l_pid == 0)
+//         {
+//             close(l_pipe[READ]);
+//             close(r_pipe[READ]);
+//             close(r_pipe[WRITE]);
+//             sortMergeFiles(l_pipe[WRITE], mid, names);
+//             close(l_pipe[WRITE]);
+//             exit(0);
+//         }
+//         else if ((r_pid = fork()) < 0)
+//             perror("Failed to fork right child");
+//         else if (r_pid == 0)
+//         {
+//             close(r_pipe[READ]);
+//             close(l_pipe[READ]);
+//             close(l_pipe[WRITE]);
+//             sortMergeFiles(r_pipe[WRITE], number - mid, names + mid);
+//             close(r_pipe[WRITE]);
+//             exit(0);
+//         }
+//         else
+//         {
+//             close(l_pipe[WRITE]);
+//             close(r_pipe[WRITE]);
+//             mergeFiles(l_pipe[READ], r_pipe[READ], fd);
+//             close(l_pipe[READ]);
+//             close(r_pipe[READ]);
+//             println("Non-Leaf: finished %d files (%s .. %s)", number, names[0], names[number-1]);
+//         }
+//     }
+// }
 
-static void addNumberToArray(int number)
-{
-    assert(a_used >= 0 && a_used <= a_size);
-    if (a_used == a_size)
-    {
-        int  n_size = (a_size + 1) * 2;
-        int *n_data = realloc(a_data, sizeof(*n_data) * n_size);
-        if (n_data == 0)
-            err_error("Failed to allocate space for %d numbers", n_size);
-        a_data = n_data;
-        a_size = n_size;
+static void addNumberToArray( int number ) {
+
+    if (a_used == a_size) { // if we need to allocate more space
+      println("a_used == a_size. space in array used up");
+      int  n_size = (a_size + 1) * 2;
+      int *n_data = realloc(a_data, sizeof(*n_data) * n_size);
+      if (n_data == 0)
+          println("Failed to allocate space for %d numbers", n_size);
+      a_data = n_data;
+      a_size = n_size;
     }
+
     a_data[a_used++] = number;
 }
 
@@ -144,22 +144,22 @@ static void writeArray(int fd)
     }
 }
 
-void readFile(char const *fileName)
+void readFile(char *fileName)
 {
     char buffer[BUFFER_SIZE];
     FILE *fp;
     fp = fopen(fileName, "r");
 
     if (fp == NULL)
-        err_error("Failed to open file %s for reading", fileName);
+        println("Failed to open file %s for reading", fileName);
 
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
     {
         char *nl = strchr(buffer, '\n');
         if (nl != 0)
             *nl = '\0';
-        println("Line: %s", buffer);
-        addNumberToArray(atoi(buffer));
+        println("Line: %s", buffer); // TODO - this is where attribute comes in
+        addNumberToArray(atoi(buffer)); // convert line to integer and add to array
     }
 
     fclose(fp);
@@ -183,12 +183,12 @@ void freeMem(void)
     free(a_data);
 }
 
-static void sortOneFile(int fd, const char *file)
-{
-    println("Leaf: processing file %s", file);
-    readFile(file);
-    sortArray();
-    writeArray(fd);
-    freeMem();
-    println("Leaf: finished file %s", file);
-}
+// static void sortOneFile(int fd, const char *file)
+// {
+//     println("Leaf: processing file %s", file);
+//     readFile(file);
+//     sortArray();
+//     writeArray(fd);
+//     freeMem();
+//     println("Leaf: finished file %s", file);
+// }
