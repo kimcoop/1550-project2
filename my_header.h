@@ -10,7 +10,7 @@
 #define BUFF_SIZE 12
 #define FILENAME_BUFF_SIZE 32
 #define OUTFILE "testoutput.txt"
-#define INPUTFILE "records5.txt"
+#define INPUTFILE "records1.txt"
 
 #define READ 0
 #define WRITE 1
@@ -20,8 +20,7 @@
 
 static void my_handler( int );
 
-void printSorter( Sorter* );
-void deploySorters( Coordinator* );
+void deploySorters( Merger*, Coordinator* );
 long numRecordsPerSorter( FILE*, int );
 Coordinator* initCoordinator( char*, int, int, char*);
 
@@ -29,11 +28,16 @@ void writeFile( char*, char* );
 void loadFile( char* );
 
 /* SORTERS */
-void deploySorter( Sorter* );
+void deploySorter( Merger*, Sorter* );
 
 static int *a_data = 0;
 static int  a_used = 0;
 static int  a_size = 0;
+static int  n_pipes = 0;
+
+/* MERGER */
+Merger* initMerger( int );
+
 
 /* ERRORS */
 void readFile(char  *);

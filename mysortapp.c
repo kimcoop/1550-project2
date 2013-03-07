@@ -7,7 +7,8 @@ Due March 07, 2013
 
 */
 
-#include <fcntl.h>
+#include <fcntl.h>     
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,7 @@ Due March 07, 2013
 #include  "my_header.h"
 #include  "my_pipes.c"
 #include  "coordinator.c"
+#include  "merger.c"
 #include  "sorter.c"
 
 
@@ -79,8 +81,10 @@ int main( int argc, char *argv[] ) {
     }
   }
 
+
   Coordinator* coord = initCoordinator( filename, numWorkers, sortAttr, executableName );
-  deploySorters( coord );
+  Merger* merger = initMerger( numWorkers );
+  deploySorters( merger, coord );
 
   return 0;
  

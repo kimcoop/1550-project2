@@ -13,14 +13,15 @@
 static void convertToString(int fd, FILE *fp)
 {
     int value;
-    while (read(fd, &value, sizeof(int)) == sizeof(int))
-        fprintf(fp, "%d\n", value);
+    while (read(fd, &value, sizeof(int)) == sizeof(int)) {
+      // fprintf(fp, "%d\n", value);
+    }
 }
 
 static int readInteger(int fd, int *value)
 {
     if (read(fd, value, sizeof(int)) != sizeof(int))
-        return EOF;
+      return EOF;
     return 0;
 }
 
@@ -158,7 +159,7 @@ void readFile(char *fileName)
         char *nl = strchr(buffer, '\n');
         if (nl != 0)
             *nl = '\0';
-        println("Line: %s", buffer); // TODO - this is where attribute comes in
+        // println("Line: %s", buffer); // TODO - this is where attribute comes in
         addNumberToArray(atoi(buffer)); // convert line to integer and add to array
     }
 

@@ -10,21 +10,45 @@ long numRecordsPerSorter( FILE* fp, int numWorkers ) {
 
   fseek (fp, 0, SEEK_END); // check number of records
   long lSize = ftell( fp );
-  log("lSize %lu", lSize);
-  rewind( fp );
-  int numRecs = (int) lSize / sizeof( MyRecord );
+  rewind( fp );// TODO: this doesn't include lines that are less than the BUFF_SIZE from struct
+  int numRecs = lSize / sizeof( MyRecord );
 
   long recsPerSorter = (long) numRecs / numWorkers;
 
-  log("NumWorkers is %d", numWorkers);
-  log("Records found in file %d", numRecs);
+  // log("NumWorkers is %d", numWorkers);
+  // log("Records found in file %d", numRecs);
   log("Records per worker is %lu ", recsPerSorter );
   log("---");
 
-  return recsPerSorter;
+  return ( lSize > 0 && sizeof(MyRecord) >lSize) ? 1  : recsPerSorter;
 } // determineNumSorters
 
-void deploySorters( Coordinator* coord ) { //coord = ( filename, numWorkers, sortAttr, executableName );
+  void
+     read_from_pipe (int file)
+     {
+      println(" read_from_pipe ");
+       FILE *stream;
+       int c;
+       stream = fdopen (file, "r");
+       while ((c = fgetc (stream)) != EOF)
+         putchar (c);
+       fclose (stream);
+     }
+     
+     /* Write some random text to the pipe. */
+     
+     void
+     write_to_pipe (int file)
+     {
+      println(" write_to_pipe");
+       FILE *stream;
+       stream = fdopen (file, "w");
+       fprintf (stream, "hello, world!\n");
+       fprintf (stream, "goodbye, world!\n");
+       fclose (stream);
+     }
+
+void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename, numWorkers, sortAttr, executableName );
   
   FILE* fp = fopen( coord->filename, "r" );
   long numRecsPerSorter;
@@ -36,40 +60,33 @@ void deploySorters( Coordinator* coord ) { //coord = ( filename, numWorkers, sor
   }
 
   fclose( fp );
-
   if ( numRecsPerSorter > 0 ) {
-    int m_pipe[2];
-    pid_t pid;
-    if ( pipe(m_pipe) < 0 ) {
-      println("Failed to create master pipe");
-    }
-
     int i;
-    for ( i = 0; i < coord->numWorkers-1; i++ ) {
-      Sorter* sorter = (Sorter*) malloc( sizeof(Sorter)+1 );
-      strcpy( sorter->filename, coord->filename );
-      // sorter->fd = fd; // TODO - have this pass as fd? or filename?
-      sorter->begin = numRecsPerSorter * i;
-      sorter->end = numRecsPerSorter * ( i+1) -1 ;
-      sorter->sortAttr = coord->sortAttr;
-      strcpy( sorter->sortProgram, coord->sortProgram );
-      strcpy( sorter->sortAttrType, "test" ); // TODO -sortAttrType
+    for ( i = 0; i < coord->numWorkers; i++ ) {
 
-      if ( pid = fork() < 0 ) {
-        perror("Failed to fork master");
-      } else if ( pid == 0 ) {
-        println(" IN CHILD PROCESS ");
-        close( m_pipe[WRITE] );
-        convertToString( m_pipe[READ], stdout );
-        close( m_pipe[READ] );
-        deploySorter( sorter );
-      } else  {
-        println(" IN PARENT PROCESS ABOUT TO DEPLOY SORTER ");
-        // close( m_pipe[READ] );
-        // sortOneFile( m_pipe[WRITE], INPUTFILE );
-        // close( m_pipe[WRITE] );
+      printf("in main\n");
+      int m_pipe[2];
+      pid_t pid;
+      if ( pipe(m_pipe) < 0 ) {
+          println("Failed to create master pipe");
       }
+      if ( (pid = fork()) < 0 ) {
+          println("Failed to fork master");
+      } else if ( pid == 0 ) {
+          println("PARENT PROCESS");
+          close(m_pipe[READ]);
+          write_to_pipe( m_pipe[WRITE] );
+          close(m_pipe[WRITE]);
+      } else {   
+          println("CHILD PROCESS");
+          merger->write_pipes[n_pipes++] = m_pipe[WRITE];
+          close(m_pipe[WRITE]);
+          read_from_pipe( m_pipe[READ] );
+          close(m_pipe[READ]);
+      }
+
     }
+
   } // numRecsPerSorter > 0
 } // deploySorters
 
@@ -80,7 +97,6 @@ Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char
   coord->numWorkers = numWorkers;
   coord->sortAttr = sortAttr;
   strcpy( coord->sortProgram, sortProgram );
-  println(" initCoordinator ");
   // loadFile( filename );
   return coord;
 } // initCoordinator

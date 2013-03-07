@@ -20,11 +20,14 @@ typedef struct {
 } Coordinator;
 
 typedef struct {
-	int fd;
-	char *file;
 	char filename[FILENAME_BUFF_SIZE];
-	int begin, end;
+	int begin, end, numBytes;
 	int sortAttr;
 	char sortAttrType[BUFF_SIZE];
 	char sortProgram[BUFF_SIZE];
 } Sorter;
+
+typedef struct{
+	int id;
+	int* write_pipes; // pointer to array
+} Merger;

@@ -1,13 +1,15 @@
-void deploySorter( Sorter* sorter ) {
-
+void deploySorter( Merger* merger, Sorter* sorter ) {
+	// close( m_pipe[WRITE] );
+ //  // convertToString( m_pipe[READ], stdout );
+ //  close( m_pipe[READ] );
 
   if ( signal(SIGUSR1, my_handler ) == SIG_ERR ) {
     perror("Could not set a handler for SIGUSR1");
     exit(4);
   }
 
-  println("Sorter sortRange: from %d to %d", sorter->begin, sorter->end);
-  println("Leaf: processing file in sorter [%d..%d]", sorter->begin, sorter->end);
+  println("Sorter sortRange: from [%d..%d]", sorter->begin, sorter->begin+sorter->numBytes);
+  println("Leaf: processing file in sorter [%d..%d]", sorter->begin, sorter->begin+sorter->numBytes);
   readFile( sorter->filename );
   sortArray();
 
@@ -16,27 +18,34 @@ void deploySorter( Sorter* sorter ) {
     perror("Bad filename.");
     exit(3);
   }
-  
+
   writeArray( fd );
-  println("Leaf: finished sorter [%d..%d]", sorter->begin, sorter->end);
+	char c[BUFF_SIZE];
+
+ 	// get( fd, sorter->begin, &c, sorter->numBytes);
+
+	// char c[BUFSIZ];
+	// int n;
+	// pid_t pid;
+	// int child_status;
+
+	lseek( fd, 0L, SEEK_SET );
+	writeFile( OUTFILE, "\n---WRITING---\n" );
+	while((read(fd, c, sorter->numBytes)) != 0) {
+	  writeFile( OUTFILE, c );
+	}
+	close( fd );
 
 
-// char c[BUFSIZ];
-// int n;
-// pid_t pid;
-// int child_status;
 
-
-
-// lseek(fd, 0L, SEEK_SET);
-// writeFile( OUTFILE, "\n---PARENT WRITING---\n" );
-// while((n = read(fd, c, nBytes)) != 0) {
-//   writeFile( OUTFILE, c );
-// }
+  println("Leaf: finished sorter [%d..%d]", sorter->begin, sorter->begin+sorter->numBytes);
 
 } // deploySorter
 
-
-void sortRange( FILE *fp, int begin, int end ) {
-} // sortRange
-
+// *get:  read n bytes from position pos 
+int get(int fd, long pos, char *buf, int n)  {
+ if ( lseek( fd, pos, 0 ) >= 0 )
+   return read( fd, buf, n );
+ else
+   return -1;
+}
