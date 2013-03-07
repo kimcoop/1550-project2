@@ -28,6 +28,7 @@ void writeFile( char*, char* );
 void loadFile( char* );
 
 /* SORTERS */
+Sorter* initSorter( Coordinator*, int, int );
 void deploySorter( Merger*, Sorter* );
 
 static int *a_data = 0;

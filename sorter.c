@@ -1,3 +1,17 @@
+Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
+
+    Sorter* sorter = (Sorter*) malloc( sizeof(Sorter)+1 );
+    strcpy( sorter->filename, coord->filename );
+    sorter->id = pos;
+    sorter->begin = numRecsPerSorter * pos;
+    log("sorter begin is %d", sorter->begin);
+    sorter->numBytes = numRecsPerSorter;
+    sorter->sortAttr = coord->sortAttr;
+    strcpy( sorter->sortProgram, coord->sortProgram );
+    strcpy( sorter->sortAttrType, "test" ); // TODO -sortAttrType
+
+} // initSorter
+
 void deploySorter( Merger* merger, Sorter* sorter ) {
 	// close( m_pipe[WRITE] );
  //  // convertToString( m_pipe[READ], stdout );

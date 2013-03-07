@@ -64,7 +64,6 @@ void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename,
     int i;
     for ( i = 0; i < coord->numWorkers; i++ ) {
 
-      printf("in main\n");
       int m_pipe[2];
       pid_t pid;
       if ( pipe(m_pipe) < 0 ) {
@@ -73,16 +72,23 @@ void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename,
       if ( (pid = fork()) < 0 ) {
           println("Failed to fork master");
       } else if ( pid == 0 ) {
-          println("PARENT PROCESS");
-          close(m_pipe[READ]);
-          write_to_pipe( m_pipe[WRITE] );
-          close(m_pipe[WRITE]);
-      } else {   
           println("CHILD PROCESS");
-          merger->write_pipes[n_pipes++] = m_pipe[WRITE];
+          close(m_pipe[READ]);
+          // Exec the sort program execl("/bin/sort", "sort",  (char*) NULL);
+          // sort here
+          write_to_pipe( m_pipe[WRITE] );
+          initSorter( coord, numRecsPerSorter, i );
+          close(m_pipe[WRITE]);
+          int rc = 37;
+          log("Child exiting (status = %d (0x%.2X))\n", rc, rc);
+          exit(rc);
+      } else {   
+          println("PARENT PROCESS");
           close(m_pipe[WRITE]);
           read_from_pipe( m_pipe[READ] );
           close(m_pipe[READ]);
+          merger->write_pipes[n_pipes++] = m_pipe[WRITE];
+
       }
 
     }
