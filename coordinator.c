@@ -81,7 +81,22 @@ Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char
   strcpy( coord->filename, filename );
   coord->numWorkers = numWorkers;
   coord->sortAttr = sortAttr;
+  switch ( sortAttr ) {
+    case 0:
+      strcpy( coord->sortType, "int" ); // SSN
+      break;
+    case 1:
+      strcpy( coord->sortType, "string" ); // firstName
+      break;
+    case 2:
+      strcpy( coord->sortType, "string" ); // lastName
+      break;
+    case 3:
+      strcpy( coord->sortType, "int" ); // income
+      break;
+    default:
+      strcpy( coord->sortType, "int" );
+  }
   strcpy( coord->sortProgram, sortProgram );
-  // loadFile( filename );
   return coord;
 } // initCoordinator

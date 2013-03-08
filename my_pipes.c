@@ -172,6 +172,22 @@ int intcmp(const void *n1, const void *n2)
     return (num1 < num2) ? -1 : (num1 > num2);
 }
 
+/* qsort C-string comparison function */ 
+int cstring_cmp(const void *a, const void *b) 
+{ 
+    const char **ia = (const char **)a;
+    const char **ib = (const char **)b;
+    return strcmp(*ia, *ib);
+    /* strcmp functions works exactly as expected from
+    comparison function */ 
+}
+
+void sortStrings( char** strings ) {
+    
+    size_t strings_len = sizeof(strings) / sizeof(char *);
+    qsort(strings, strings_len, sizeof(char *), cstring_cmp);
+}
+
 void sortArray(void)
 {
     log("sortArray");

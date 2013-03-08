@@ -16,6 +16,7 @@ typedef struct {
 	char filename[FILENAME_BUFF_SIZE];
 	int numWorkers;
 	int sortAttr;
+	char sortType[BUFF_SIZE];
 	char sortProgram[BUFF_SIZE];
 } Coordinator;
 
@@ -23,7 +24,7 @@ typedef struct {
 	char filename[FILENAME_BUFF_SIZE];
 	int begin, pos, numBytes; // pos tracks pos in merger[pipes]
 	int sortAttr;
-	char sortAttrType[BUFF_SIZE];
+	char sortType[BUFF_SIZE];
 	char sortProgram[BUFF_SIZE];
 } Sorter;
 

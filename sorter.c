@@ -20,13 +20,14 @@ Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
     sorter->numBytes = numRecsPerSorter;
     sorter->sortAttr = coord->sortAttr;
     strcpy( sorter->sortProgram, coord->sortProgram );
-    strcpy( sorter->sortAttrType, "test" ); // TODO -sortAttrType
+    strcpy( sorter->sortType, coord->sortType );
     return sorter;
 
 } // initSorter
 
 MyRecord** sortRecords( MyRecord** records ) {
   println("sortRecords");
+  //void sortStrings( char** strings ) { TODOOOOOO*****
   MyRecord** oRecords = records;
   return oRecords;
 } // sortRecords
@@ -48,7 +49,7 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
       // struct MyRecord* record = (struct MyRecord*) malloc( sizeof( struct MyRecord)+1 );
       MyRecord record;
       fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
-      if ( numRecsSkipped >= sorter->begin ) {
+      if ( numRecsSkipped >= sorter->begin ) { // TODO: this is SUPER HACKY
         printf("Parsing record %d: %d %s %s %d \n", i, record.ssn, record.LastName, record.FirstName, record.income);
         records[ i ] = &record;
         i++;

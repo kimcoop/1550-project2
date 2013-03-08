@@ -40,9 +40,11 @@ static int  a_size = 0;
 static int  n_pipes = 0;
 static int 	completed_sorters = 0;
 
+
+void sortStrings( char** );
+
 /* MERGER */
 Merger* initMerger( int );
-
 
 /* ERRORS */
 void readFile(char  *);
