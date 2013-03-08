@@ -33,7 +33,7 @@ MyRecord** sortRecords( MyRecord** records ) {
 
 void deploySorter( int* m_pipe, Sorter* sorter ) {
 
-  println("deploySorter: m_pipe**");
+  println("deploySorter begin at: %d", sorter->begin);
 
   MyRecord* records[ sorter->numBytes ];
   FILE  *fp = NULL;
@@ -42,14 +42,18 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
     println("Unknown file");
     exit(1);
   } else {
-    while ( !feof(fp) ) {
-      int i = 0;
+    // fseek( fp, sorter->begin, SEEK_SET );
+    int i = 0, numRecsSkipped = 0;
+    while ( !feof(fp) && i < sorter->numBytes ) {
       // struct MyRecord* record = (struct MyRecord*) malloc( sizeof( struct MyRecord)+1 );
       MyRecord record;
       fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
-      printf("Parsing record %d: %d %s %s %d \n", i, record.ssn, record.LastName, record.FirstName, record.income);
-      records[ i ] = &record;
-      i++;
+      if ( numRecsSkipped >= sorter->begin ) {
+        printf("Parsing record %d: %d %s %s %d \n", i, record.ssn, record.LastName, record.FirstName, record.income);
+        records[ i ] = &record;
+        i++;
+      }
+      numRecsSkipped++;
     } // end while
 
     fclose(fp);
