@@ -26,8 +26,6 @@ void read_from_pipe (int file) {
      putchar (c);
    fclose (stream);
 }
-     
-
 
 void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename, numWorkers, sortAttr, executableName );
   

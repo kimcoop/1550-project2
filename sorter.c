@@ -1,14 +1,15 @@
      
-     void
-     write_to_pipe (int file)
-     {
-      println(" write_to_pipe");
-       FILE *stream;
-       stream = fdopen (file, "w");
-       fprintf (stream, "hello, world!\n");
-       fprintf (stream, "goodbye, world!\n");
-       fclose (stream);
-     }
+ void
+ write_to_pipe (int file)
+ {
+  println(" write_to_pipe");
+   FILE *stream;
+   stream = fdopen (file, "w");
+   fprintf (stream, "hello, world!\n");
+   fprintf (stream, "goodbye, world!\n");
+   fclose (stream);
+ }
+
 
 Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
 
@@ -24,9 +25,39 @@ Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
 
 } // initSorter
 
+MyRecord** sortRecords( MyRecord** records ) {
+  println("sortRecords");
+  MyRecord** oRecords = records;
+  return oRecords;
+} // sortRecords
+
 void deploySorter( int* m_pipe, Sorter* sorter ) {
 
   println("deploySorter: m_pipe**");
+
+  MyRecord* records[ sorter->numBytes ];
+  FILE  *fp = NULL;
+  char separator;
+  if ( (fp = fopen( sorter->filename, "r" )) == NULL ) {
+    println("Unknown file");
+    exit(1);
+  } else {
+    while ( !feof(fp) ) {
+      int i = 0;
+      // struct MyRecord* record = (struct MyRecord*) malloc( sizeof( struct MyRecord)+1 );
+      MyRecord record;
+      fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
+      printf("Parsing record %d: %d %s %s %d \n", i, record.ssn, record.LastName, record.FirstName, record.income);
+      records[ i ] = &record;
+      i++;
+    } // end while
+
+    fclose(fp);
+  }
+
+  MyRecord** oRecords = sortRecords( records );
+
+
   close(m_pipe[READ]);
   write_to_pipe( m_pipe[WRITE] );
   close(m_pipe[WRITE]);
@@ -84,3 +115,9 @@ int get(int fd, long pos, char *buf, int n)  {
  else
    return -1;
 }
+
+/******************************************
+ SORTING
+******************************************/
+
+

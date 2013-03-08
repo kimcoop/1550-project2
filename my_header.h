@@ -20,12 +20,14 @@
 
 static void my_handler( int );
 
+
+
 void deploySorters( Merger*, Coordinator* );
 long numRecordsPerSorter( FILE*, int );
 Coordinator* initCoordinator( char*, int, int, char*);
 
 void writeFile( char*, char* );
-void loadFile( char* );
+MyRecord** loadRecords( int, char* );
 
 /* SORTERS */
 Sorter* initSorter( Coordinator*, int, int );
