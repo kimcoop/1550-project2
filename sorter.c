@@ -1,13 +1,22 @@
      
- void
- write_to_pipe (int file)
- {
+void write_to_pipe( MyRecord** records, int file, int len, int attr ) {  // TODO - assumes string (sorting attr)
   println(" write_to_pipe");
-   FILE *stream;
-   stream = fdopen (file, "w");
-   fprintf (stream, "hello, world!\n");
-   fprintf (stream, "goodbye, world!\n");
-   fclose (stream);
+  FILE *stream;
+  stream = fdopen (file, "w");
+  fprintf( stream, "hello, world!xx\n" );
+  fprintf( stream, "goodbye, world!xx\n" );
+  
+  int i;
+  for ( i = 0; i < len; i++ ) {
+    MyRecord* rec = (MyRecord*) records[i];
+    if ( attr == KEY_LASTNAME ) { // TODO - this isn't DRY :(
+      fprintf( stream, "%s\n", rec->LastName );
+    } else {
+      fprintf( stream, "%s\n", rec->FirstName ); // firstName
+    } // for
+  }
+
+   fclose( stream );
  }
 
 
@@ -40,6 +49,8 @@ void sortRecords( MyRecord** records, int numRecs, int attr, char* attrType ) {
       } // for
     }
     sortStrings( vals, numRecs );
+    println("???");
+    print_cstring_array( vals, numRecs );
     
   } else {
     int vals[ numRecs ];
@@ -90,48 +101,14 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
 
     fclose(fp);
   }
+
   sortRecords( records, sorter->numRecs, sorter->sortAttr, sorter->sortType );
+  
 
   close(m_pipe[READ]);
-  write_to_pipe( m_pipe[WRITE] );
+  write_to_pipe( records, m_pipe[WRITE], sorter->numRecs, sorter->sortAttr );
   close(m_pipe[WRITE]);
 
-  // if ( signal(SIGUSR1, my_handler) == SIG_ERR ) {
-  //   fputs("An error occurred while setting a signal handler.\n", stderr);
-  // }
-  // if ( kill(getpid(), SIGUSR1) != 0 ) {
-  //   fputs("Error raising the signal.\n", stderr);
-  // }
-
-
-
- //  println("Sorter sortRange: from [%d..%d]", sorter->begin, sorter->begin+sorter->numBytes);
- //  println("Leaf: processing file in sorter [%d..%d]", sorter->begin, sorter->begin+sorter->numBytes);
- //  readFile( sorter->filename );
- //  sortArray();
-
-	// int fd;
- //  if (( fd = open(sorter->filename, O_RDONLY, 0 )) < 0 ){
- //    perror("Bad filename.");
- //    exit(3);
- //  }
-
- //  writeArray( fd );
-	// char c[BUFF_SIZE];
-
- // 	// get( fd, sorter->begin, &c, sorter->numBytes);
-
-	// // char c[BUFSIZ];
-	// // int n;
-	// // pid_t pid;
-	// // int child_status;
-
-	// lseek( fd, 0L, SEEK_SET );
-	// writeFile( OUTFILE, "\n---WRITING---\n" );
-	// while((read(fd, c, sorter->numBytes)) != 0) {
-	//   writeFile( OUTFILE, c );
-	// }
-	// close( fd );
 
   println("sorter pos %d", sorter->pos);
 
@@ -141,73 +118,54 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
 
 } // deploySorter
 
-// *get:  read n bytes from position pos 
-int get(int fd, long pos, char *buf, int n)  {
- if ( lseek( fd, pos, 0 ) >= 0 )
-   return read( fd, buf, n );
- else
-   return -1;
-}
+// // *get:  read n bytes from position pos 
+// int get(int fd, long pos, char *buf, int n)  {
+//  if ( lseek( fd, pos, 0 ) >= 0 )
+//    return read( fd, buf, n );
+//  else
+//    return -1;
+// }
 
 /******************************************
  SORTING
 ******************************************/
-/* C-string array printing function */ 
-void print_cstring_array(char **array, int len) 
-{ 
+
+void print_cstring_array( char **array, int len ) { 
     int i;
- 
-    for(i=0; i<len; i++) 
-        printf("%s | ", array[i]);
- 
+    for ( i = 0; i < len; i++ ) 
+      printf("%s | ", array[i]);
     putchar('\n');
 }
-void print_int_array(int *array, int len) 
-{ 
+
+void print_int_array( int *array, int len ) { 
     int i;
- 
-    for(i=0; i<len; i++) 
-        printf("%d | ", array[i]);
- 
+    for ( i = 0; i < len; i++ ) 
+      printf("%d | ", array[i]);
     putchar('\n');
 } 
 
-int intcmp(const void *n1, const void *n2) {
-
+int intcmp( const void *n1, const void *n2 ) {
     const int num1 = *(const int *) n1;
     const int num2 = *(const int *) n2;
     return (num1 < num2) ? -1 : (num1 > num2);
 }
 
-/* qsort C-string comparison function */ 
-int cstring_cmp(const void *a, const void *b) { 
+
+int cstring_cmp( const void *a, const void *b ) { 
     const char **ia = (const char **)a;
     const char **ib = (const char **)b;
     return strcmp(*ia, *ib);
-    /* strcmp functions works exactly as expected from
-    comparison function */ 
 }
 
 
 void sortStrings( char** strings, int len ) {
-  println(" sortStrings ");   
-
-  long strings_len = sizeof(strings) / sizeof(char *);
-  print_cstring_array(strings, len);
-  
+  println(" sortStrings ");
   qsort(strings, len, sizeof(char *), cstring_cmp);
-  println(" after sorting ");
-
-  print_cstring_array(strings, len);
-
+  print_cstring_array( strings, len );
 }
 
 void sortInts( int* vals, int len ) {
   println(" sortInts");
-  print_int_array(vals, len);
-  
   qsort(vals, len, sizeof(int), intcmp);
-
-  println(" after sorting ");
-  print_int_array(vals, len);
+  print_int_array( vals, len );
 }

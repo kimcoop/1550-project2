@@ -39,6 +39,10 @@ MyRecord** loadRecords( int, char* );
 Sorter* initSorter( Coordinator*, int, int );
 // void deploySorter( Merger*, Sorter* );
 void deploySorter( int*, Sorter* );
+void print_cstring_array( char **, int );
+void print_int_array( int *, int );
+int intcmp( const void *, const void * );
+int cstring_cmp( const void *a, const void * );
 
 static int *a_data = 0;
 static int  a_used = 0;
@@ -57,7 +61,6 @@ Merger* initMerger( int );
 void readFile(char  *);
 void freeMem(void);
 void sortArray(void);
-int  intcmp(void const *n1, void const *n2);
 static void sortMergeFile(int, char *);
 static void sortMergeFiles(int, int, char **);
 static void sortFile(int, const char *);
