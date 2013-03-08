@@ -42,7 +42,9 @@ void deploySorter( int*, Sorter* );
 void print_cstring_array( char **, int );
 void print_int_array( int *, int );
 int intcmp( const void *, const void * );
-int cstring_cmp( const void *a, const void * );
+int structCompString( const void *, const void *  );
+int structCompInt( const void *, const void *  );
+void sortRecords( MyRecord**, int, int );
 
 static int *a_data = 0;
 static int  a_used = 0;
@@ -50,9 +52,7 @@ static int  a_size = 0;
 static int  n_pipes = 0;
 static int 	completed_sorters = 0;
 
-void sortRecords( MyRecord**, int, int, char* ); 
-void sortStrings( char**, int );
-void sortInts( int*, int );
+
 
 /* MERGER */
 Merger* initMerger( int );

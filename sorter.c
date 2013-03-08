@@ -34,42 +34,6 @@ Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
 
 } // initSorter
 
-void sortRecords( MyRecord** records, int numRecs, int attr, char* attrType ) {
-  println("sortRecords");
-  int i;
-
-  if ( strEqual(attrType, "string") ) {
-    char* vals[ numRecs ];
-    for ( i = 0; i < numRecs; i++ ) {
-      MyRecord* rec = (MyRecord*) records[i];
-      if ( attr == KEY_LASTNAME ) {
-        vals[ i ] = rec->LastName; // lastName
-      } else {
-        vals[ i ] = rec->FirstName; // firstName
-      } // for
-    }
-    sortStrings( vals, numRecs );
-    println("???");
-    print_cstring_array( vals, numRecs );
-    
-  } else {
-    int vals[ numRecs ];
-    for ( i = 0; i < numRecs; i++ ) {
-      MyRecord* rec = (MyRecord*) records[i];
-      if ( attr == KEY_SSN ) {
-        vals[ i ] = rec->ssn; // ssn
-      } else {
-        vals[ i ] = rec->income; // income
-      } // for
-    }
-    for ( i = 0; i < numRecs; i++ ) {
-      println( "vals[%d] = %d ", i, vals[i]);
-    }
-    sortInts( vals, numRecs );
-  }
-  
-} // sortRecords
-
 void deploySorter( int* m_pipe, Sorter* sorter ) {
 
   println("deploySorter begin at: %d", sorter->begin);
@@ -102,8 +66,7 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
     fclose(fp);
   }
 
-  sortRecords( records, sorter->numRecs, sorter->sortAttr, sorter->sortType );
-  
+  sortRecords( records, sorter->numRecs, sorter->sortAttr );
 
   close(m_pipe[READ]);
   write_to_pipe( records, m_pipe[WRITE], sorter->numRecs, sorter->sortAttr );
@@ -145,27 +108,46 @@ void print_int_array( int *array, int len ) {
 } 
 
 int intcmp( const void *n1, const void *n2 ) {
-    const int num1 = *(const int *) n1;
-    const int num2 = *(const int *) n2;
-    return (num1 < num2) ? -1 : (num1 > num2);
+  const int num1 = *(const int *) n1;
+  const int num2 = *(const int *) n2;
+  return (num1 < num2) ? -1 : (num1 > num2);
 }
 
+int structCmpString( const void *struct_a, const void *struct_b ) { 
 
-int cstring_cmp( const void *a, const void *b ) { 
-    const char **ia = (const char **)a;
-    const char **ib = (const char **)b;
-    return strcmp(*ia, *ib);
-}
+  MyRecord *a = ( MyRecord * ) struct_a;
+  MyRecord *b = ( MyRecord * ) struct_b;
+
+  println (" comparing %s and %s ", a->LastName, b->LastName ) ;
+  // if ( attr == KEY_LASTNAME )
+    return strcmp(  a->LastName, b->LastName ); 
+  // else 
+    // return strcmp(  a->FirstName, b->FirstName );
+
+} // structCmp
+
+int structCmpInt( const void *struct_a, const void *struct_b ) { 
+
+  MyRecord *a = ( MyRecord * ) struct_a;
+  MyRecord *b = ( MyRecord * ) struct_b;
+
+  // if ( attr == KEY_SSN )
+  //   return intcmp(  &a->ssn, &b->ssn ); 
+  // else
+    return intcmp(  &a->income, &b->income );
+
+} // structCmp
 
 
-void sortStrings( char** strings, int len ) {
-  println(" sortStrings ");
-  qsort(strings, len, sizeof(char *), cstring_cmp);
-  print_cstring_array( strings, len );
-}
+void sortRecords( MyRecord** records, int numRecs, int attr ) {
+  println(" sortRecords ");
+  
+  if ( attr == KEY_LASTNAME || attr == KEY_FIRSTNAME )
+    qsort( records, numRecs, sizeof( MyRecord* ), structCmpString );
+  else
+    qsort( records, numRecs, sizeof( MyRecord ), structCmpInt );
 
-void sortInts( int* vals, int len ) {
-  println(" sortInts");
-  qsort(vals, len, sizeof(int), intcmp);
-  print_int_array( vals, len );
-}
+} // sortRecords
+
+
+

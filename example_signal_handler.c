@@ -11,6 +11,14 @@
 
   /*
 
+2:14am update: wip on figuring out why piped ordered results
+are inconsistent. the sort funcionts work, but pipes don't seem
+to store correctly. i suspect it has something to do with the fact
+the ordered data is being held in a side array called vals, rather
+than manipulating the MyRecord struct itself. perhaps this is the
+next step.
+
+------------------------------------------------
 merger must contain an array size NUM_WORKERS
 of ararys size NUM_RECS_PER_WORKER. then the
 child processes/sorters can furnish their ordered
