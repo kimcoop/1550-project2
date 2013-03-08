@@ -35,13 +35,11 @@ void sortRecords( MyRecord** records, int numRecs, int attr, char* attrType ) {
       MyRecord* rec = (MyRecord*) records[i];
       if ( attr == KEY_LASTNAME ) {
         vals[ i ] = rec->LastName; // lastName
-        println( "records attr  = %s",  rec->LastName );
       } else {
         vals[ i ] = rec->FirstName; // firstName
-        println( "records attr  = %s",  rec->FirstName );
       } // for
     }
-    sortStrings( vals );
+    sortStrings( vals, numRecs );
     
   } else {
     int vals[ numRecs ];
@@ -49,13 +47,14 @@ void sortRecords( MyRecord** records, int numRecs, int attr, char* attrType ) {
       MyRecord* rec = (MyRecord*) records[i];
       if ( attr == KEY_SSN ) {
         vals[ i ] = rec->ssn; // ssn
-        println( "records attr  = %d",  rec->ssn );
       } else {
         vals[ i ] = rec->income; // income
-        println( "records attr  = %d",  rec->income );
       } // for
     }
-    sortInts( vals );
+    for ( i = 0; i < numRecs; i++ ) {
+      println( "vals[%d] = %d ", i, vals[i]);
+    }
+    sortInts( vals, numRecs );
   }
   
 } // sortRecords
@@ -153,14 +152,62 @@ int get(int fd, long pos, char *buf, int n)  {
 /******************************************
  SORTING
 ******************************************/
+/* C-string array printing function */ 
+void print_cstring_array(char **array, int len) 
+{ 
+    int i;
+ 
+    for(i=0; i<len; i++) 
+        printf("%s | ", array[i]);
+ 
+    putchar('\n');
+}
+void print_int_array(int *array, int len) 
+{ 
+    int i;
+ 
+    for(i=0; i<len; i++) 
+        printf("%d | ", array[i]);
+ 
+    putchar('\n');
+} 
 
-void sortStrings( char** strings ) {
+int intcmp(const void *n1, const void *n2) {
+
+    const int num1 = *(const int *) n1;
+    const int num2 = *(const int *) n2;
+    return (num1 < num2) ? -1 : (num1 > num2);
+}
+
+/* qsort C-string comparison function */ 
+int cstring_cmp(const void *a, const void *b) { 
+    const char **ia = (const char **)a;
+    const char **ib = (const char **)b;
+    return strcmp(*ia, *ib);
+    /* strcmp functions works exactly as expected from
+    comparison function */ 
+}
+
+
+void sortStrings( char** strings, int len ) {
   println(" sortStrings ");   
-  size_t strings_len = sizeof(strings) / sizeof(char *);
-  qsort(strings, strings_len, sizeof(char *), cstring_cmp);
+
+  long strings_len = sizeof(strings) / sizeof(char *);
+  print_cstring_array(strings, len);
+  
+  qsort(strings, len, sizeof(char *), cstring_cmp);
+  println(" after sorting ");
+
+  print_cstring_array(strings, len);
+
 }
 
-void sortInts( int* vals ) {
+void sortInts( int* vals, int len ) {
   println(" sortInts");
-}
+  print_int_array(vals, len);
+  
+  qsort(vals, len, sizeof(int), intcmp);
 
+  println(" after sorting ");
+  print_int_array(vals, len);
+}

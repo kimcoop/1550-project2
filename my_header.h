@@ -47,8 +47,8 @@ static int  n_pipes = 0;
 static int 	completed_sorters = 0;
 
 void sortRecords( MyRecord**, int, int, char* ); 
-void sortStrings( char** );
-void sortInts( int* );
+void sortStrings( char**, int );
+void sortInts( int*, int );
 
 /* MERGER */
 Merger* initMerger( int );
