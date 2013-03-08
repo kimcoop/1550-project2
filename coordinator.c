@@ -82,16 +82,16 @@ Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char
   coord->numWorkers = numWorkers;
   coord->sortAttr = sortAttr;
   switch ( sortAttr ) {
-    case 0:
+    case KEY_SSN:
       strcpy( coord->sortType, "int" ); // SSN
       break;
-    case 1:
+    case KEY_LASTNAME:
       strcpy( coord->sortType, "string" ); // firstName
       break;
-    case 2:
+    case KEY_FIRSTNAME:
       strcpy( coord->sortType, "string" ); // lastName
       break;
-    case 3:
+    case KEY_INCOME:
       strcpy( coord->sortType, "int" ); // income
       break;
     default:

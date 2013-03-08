@@ -182,12 +182,6 @@ int cstring_cmp(const void *a, const void *b)
     comparison function */ 
 }
 
-void sortStrings( char** strings ) {
-    
-    size_t strings_len = sizeof(strings) / sizeof(char *);
-    qsort(strings, strings_len, sizeof(char *), cstring_cmp);
-}
-
 void sortArray(void)
 {
     log("sortArray");

@@ -17,7 +17,7 @@ Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
     strcpy( sorter->filename, coord->filename );
     sorter->pos = pos;
     sorter->begin = numRecsPerSorter * pos;
-    sorter->numBytes = numRecsPerSorter;
+    sorter->numRecs = numRecsPerSorter;
     sorter->sortAttr = coord->sortAttr;
     strcpy( sorter->sortProgram, coord->sortProgram );
     strcpy( sorter->sortType, coord->sortType );
@@ -25,18 +25,48 @@ Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
 
 } // initSorter
 
-MyRecord** sortRecords( MyRecord** records ) {
+void sortRecords( MyRecord** records, int numRecords, int attr, char* attrType ) {
   println("sortRecords");
-  //void sortStrings( char** strings ) { TODOOOOOO*****
-  MyRecord** oRecords = records;
-  return oRecords;
+  int i;
+
+  if ( strEqual(attrType, "string") ) {
+    char* vals[ numRecords ];
+    for ( i = 0; i < numRecords; i++ ) {
+      MyRecord* rec = (MyRecord*) records[i];
+      println("record at %d has FirstName %s ", i, rec->FirstName);
+      if ( attr == KEY_LASTNAME ) {
+        vals[ i ] = rec->LastName; // lastName
+        println( "records attr  = %s",  rec->LastName );
+      } else {
+        vals[ i ] = rec->FirstName; // firstName
+        println( "records attr  = %s",  rec->FirstName );
+      } // for
+    }
+    sortStrings( vals );
+    
+  } else {
+    int vals[ numRecords ];
+    for ( i = 0; i < numRecords; i++ ) {
+      MyRecord* rec = (MyRecord*) records[i];
+      println("record at %d has FirstName %s ", i, rec->FirstName);
+      if ( attr == KEY_SSN ) {
+        vals[ i ] = rec->ssn; // ssn
+        println( "records attr  = %d",  rec->ssn );
+      } else {
+        vals[ i ] = rec->income; // income
+        println( "records attr  = %d",  rec->income );
+      } // for
+    }
+    sortInts( vals );
+  }
+  
 } // sortRecords
 
 void deploySorter( int* m_pipe, Sorter* sorter ) {
 
   println("deploySorter begin at: %d", sorter->begin);
 
-  MyRecord* records[ sorter->numBytes ];
+  MyRecord* records[ sorter->numRecs ];
   FILE  *fp = NULL;
   char separator;
   if ( (fp = fopen( sorter->filename, "r" )) == NULL ) {
@@ -45,7 +75,7 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
   } else {
     // fseek( fp, sorter->begin, SEEK_SET );
     int i = 0, numRecsSkipped = 0;
-    while ( !feof(fp) && i < sorter->numBytes ) {
+    while ( !feof(fp) && i < sorter->numRecs ) {
       // struct MyRecord* record = (struct MyRecord*) malloc( sizeof( struct MyRecord)+1 );
       MyRecord record;
       fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
@@ -60,8 +90,7 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
     fclose(fp);
   }
 
-  MyRecord** oRecords = sortRecords( records );
-
+  sortRecords( records, sorter->numRecs, sorter->sortAttr, sorter->sortType );
 
   close(m_pipe[READ]);
   write_to_pipe( m_pipe[WRITE] );
@@ -104,7 +133,6 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
 	// }
 	// close( fd );
 
-  println("Leaf: finished sorter [%d..%d]", sorter->begin, sorter->begin+sorter->numBytes);
   println("sorter pos %d", sorter->pos);
 
   int rc = 37;
@@ -125,4 +153,13 @@ int get(int fd, long pos, char *buf, int n)  {
  SORTING
 ******************************************/
 
+void sortStrings( char** strings ) {
+  println(" sortStrings ");   
+  size_t strings_len = sizeof(strings) / sizeof(char *);
+  qsort(strings, strings_len, sizeof(char *), cstring_cmp);
+}
+
+void sortInts( int* vals ) {
+  println(" sortInts");
+}
 
