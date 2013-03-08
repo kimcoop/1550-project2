@@ -20,6 +20,13 @@ Due March 07, 2013
 #include  "sorter.c"
 
 
+static void my_handler( int signum ) {
+  if ( signum == SIGUSR1 ) {
+    completed_sorters = completed_sorters+1;
+    println("Received SIGUSR1.Incrementing completed_sorters to %d", completed_sorters);
+  }
+} // my_handler
+
 void writeFile( char* filename, char* str ) {
   FILE *file;
   file = fopen( filename, "a+" ); // append file (add text to a file or create a file if it does not exist)

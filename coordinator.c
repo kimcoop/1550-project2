@@ -1,10 +1,4 @@
-static void my_handler( int signum ) {
-  println("in my_handler");
-  println("********");
-  if ( signum == SIGUSR1 ) {
-    println("Received SIGUSR1!\n");
-  }
-} // my_handler
+
 
 long numRecordsPerSorter( FILE* fp, int numWorkers ) {
 
@@ -23,30 +17,17 @@ long numRecordsPerSorter( FILE* fp, int numWorkers ) {
   return ( lSize > 0 && sizeof(MyRecord) >lSize) ? 1  : recsPerSorter;
 } // determineNumSorters
 
-  void
-     read_from_pipe (int file)
-     {
-      println(" read_from_pipe ");
-       FILE *stream;
-       int c;
-       stream = fdopen (file, "r");
-       while ((c = fgetc (stream)) != EOF)
-         putchar (c);
-       fclose (stream);
-     }
+void read_from_pipe (int file) {
+   println(" read_from_pipe ");
+   FILE *stream;
+   int c;
+   stream = fdopen (file, "r");
+   while ((c = fgetc (stream)) != EOF)
+     putchar (c);
+   fclose (stream);
+}
      
-     /* Write some random text to the pipe. */
-     
-     void
-     write_to_pipe (int file)
-     {
-      println(" write_to_pipe");
-       FILE *stream;
-       stream = fdopen (file, "w");
-       fprintf (stream, "hello, world!\n");
-       fprintf (stream, "goodbye, world!\n");
-       fclose (stream);
-     }
+
 
 void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename, numWorkers, sortAttr, executableName );
   
@@ -63,7 +44,7 @@ void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename,
   if ( numRecsPerSorter > 0 ) {
     int i;
     for ( i = 0; i < coord->numWorkers; i++ ) {
-
+      int child_status;
       int m_pipe[2];
       pid_t pid;
       if ( pipe(m_pipe) < 0 ) {
@@ -73,22 +54,22 @@ void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename,
           println("Failed to fork master");
       } else if ( pid == 0 ) {
           println("CHILD PROCESS");
-          close(m_pipe[READ]);
+          
           // Exec the sort program execl("/bin/sort", "sort",  (char*) NULL);
           // sort here
-          write_to_pipe( m_pipe[WRITE] );
-          initSorter( coord, numRecsPerSorter, i );
-          close(m_pipe[WRITE]);
-          int rc = 37;
-          log("Child exiting (status = %d (0x%.2X))\n", rc, rc);
-          exit(rc);
+          Sorter* sorter = initSorter( coord, numRecsPerSorter, i );
+          deploySorter( m_pipe, sorter );
+          
       } else {   
+          wait(&child_status);
           println("PARENT PROCESS");
           close(m_pipe[WRITE]);
           read_from_pipe( m_pipe[READ] );
           close(m_pipe[READ]);
           merger->write_pipes[n_pipes++] = m_pipe[WRITE];
-
+          // when the child at ( read_pipe = sorter->pos, write_pipe = sorter->pos+1 )
+          // is done sorting, it signals via a signal handler that it is done / contents sorted.
+          // then the merger node will retrieve the sorted contents from the pipe.
       }
 
     }

@@ -29,12 +29,14 @@ void loadFile( char* );
 
 /* SORTERS */
 Sorter* initSorter( Coordinator*, int, int );
-void deploySorter( Merger*, Sorter* );
+// void deploySorter( Merger*, Sorter* );
+void deploySorter( int*, Sorter* );
 
 static int *a_data = 0;
 static int  a_used = 0;
 static int  a_size = 0;
 static int  n_pipes = 0;
+static int 	completed_sorters = 0;
 
 /* MERGER */
 Merger* initMerger( int );

@@ -7,7 +7,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "errors.c"
 
 
 static void convertToString(int fd, FILE *fp)
@@ -28,7 +27,7 @@ static int readInteger(int fd, int *value)
 static void writeInteger(int fd, int value)
 {
     if (write(fd, &value, sizeof(int)) != sizeof(int))
-        err_error("Failed to write integer to fd %d", fd);
+        println("Failed to write integer to fd %d", fd);
 }
 
 static void mergeFiles(int fd_in1, int fd_in2, int fd_out)
