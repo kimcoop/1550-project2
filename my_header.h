@@ -8,8 +8,11 @@
 #define strEqual(a, b) !strcmp(a, b)
 #define BUFF_SIZE 12
 #define FILENAME_BUFF_SIZE 32
+
 #define OUTFILE "testoutput.txt"
 #define INPUTFILE "records1.txt"
+#define SORT_ATTR KEY_LASTNAME
+
 #define READ 0
 #define WRITE 1
 #define BUFFER_SIZE 256

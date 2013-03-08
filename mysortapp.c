@@ -67,7 +67,7 @@ int main( int argc, char *argv[] ) {
   if ( numFlags < 2 ) {
     log( "No commands provided." );
     numWorkers = 2; // some defaults for debugging/testing
-    sortAttr = 0;
+    sortAttr = SORT_ATTR;
     strcpy( executableName, "testExe" );
     strcpy( filename, INPUTFILE );
 

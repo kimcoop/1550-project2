@@ -25,15 +25,14 @@ Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
 
 } // initSorter
 
-void sortRecords( MyRecord** records, int numRecords, int attr, char* attrType ) {
+void sortRecords( MyRecord** records, int numRecs, int attr, char* attrType ) {
   println("sortRecords");
   int i;
 
   if ( strEqual(attrType, "string") ) {
-    char* vals[ numRecords ];
-    for ( i = 0; i < numRecords; i++ ) {
+    char* vals[ numRecs ];
+    for ( i = 0; i < numRecs; i++ ) {
       MyRecord* rec = (MyRecord*) records[i];
-      println("record at %d has FirstName %s ", i, rec->FirstName);
       if ( attr == KEY_LASTNAME ) {
         vals[ i ] = rec->LastName; // lastName
         println( "records attr  = %s",  rec->LastName );
@@ -45,10 +44,9 @@ void sortRecords( MyRecord** records, int numRecords, int attr, char* attrType )
     sortStrings( vals );
     
   } else {
-    int vals[ numRecords ];
-    for ( i = 0; i < numRecords; i++ ) {
+    int vals[ numRecs ];
+    for ( i = 0; i < numRecs; i++ ) {
       MyRecord* rec = (MyRecord*) records[i];
-      println("record at %d has FirstName %s ", i, rec->FirstName);
       if ( attr == KEY_SSN ) {
         vals[ i ] = rec->ssn; // ssn
         println( "records attr  = %d",  rec->ssn );
@@ -76,12 +74,16 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
     // fseek( fp, sorter->begin, SEEK_SET );
     int i = 0, numRecsSkipped = 0;
     while ( !feof(fp) && i < sorter->numRecs ) {
-      // struct MyRecord* record = (struct MyRecord*) malloc( sizeof( struct MyRecord)+1 );
+      MyRecord* recordPtr = ( MyRecord* ) malloc( sizeof( MyRecord)+1 );
       MyRecord record;
       fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
       if ( numRecsSkipped >= sorter->begin ) { // TODO: this is SUPER HACKY
         printf("Parsing record %d: %d %s %s %d \n", i, record.ssn, record.LastName, record.FirstName, record.income);
-        records[ i ] = &record;
+        recordPtr->ssn = record.ssn;
+        strcpy( recordPtr->LastName, record.LastName );
+        strcpy( recordPtr->FirstName, record.FirstName );
+        recordPtr->income = record.income;
+        records[ i ] = recordPtr;
         i++;
       }
       numRecsSkipped++;
@@ -89,7 +91,6 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
 
     fclose(fp);
   }
-
   sortRecords( records, sorter->numRecs, sorter->sortAttr, sorter->sortType );
 
   close(m_pipe[READ]);
