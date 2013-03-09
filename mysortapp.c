@@ -7,25 +7,17 @@ Due March 07, 2013
 
 */
 
-#include <fcntl.h>     
+#include <fcntl.h>   
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
 #include  "my_header.h"
 #include  "my_pipes.c"
 #include  "coordinator.c"
 #include  "merger.c"
 #include  "sorter.c"
-
-
-// static void my_handler( int signum ) {
-//   if ( signum == SIGUSR1 ) {
-//     completed_sorters = completed_sorters+1;
-//     println("Received SIGUSR1.Incrementing completed_sorters to %d", completed_sorters);
-//   }
-// } // my_handler
+#include  "sort.c"
 
 int main( int argc, char *argv[] ) {
 
