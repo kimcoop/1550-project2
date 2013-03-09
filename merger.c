@@ -3,6 +3,7 @@ Merger* initMerger( int numWorkers ) {
   Merger* merger = ( Merger* ) malloc( sizeof( Merger) +1 );
   int **pipes = generatePipes( numWorkers );
   merger->pipes = pipes;
+  merger->numFinished = 0;
   return merger;
 }
 
@@ -25,6 +26,17 @@ void mergeSorter( Coordinator* coord, Merger* merger, int index ) {
   read( merger->pipes[ index ][READ], buffer, BUFFER_SIZE );
   writeToFile( OUTFILE, buffer );
   close( merger->pipes[ index ][READ] );
+
+  merger->numFinished = merger->numFinished + 1; // increment
+
+  if ( merger->numFinished % 4 == 0 ) 
+    println("...running...");
+
+  if ( merger->numFinished == coord->numWorkers ) { // all workers have completed
+    if ( raise(SIGUSR1) != 0 ) {
+      println("Error raising the signal.");
+    }
+  }
 }
 
 void writeToFile( char* filename, char* str ) {

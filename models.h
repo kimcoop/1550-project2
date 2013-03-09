@@ -30,6 +30,6 @@ typedef struct {
 } Sorter;
 
 typedef struct{
-	int id;
+	int numFinished;
 	int **pipes;
 } Merger;

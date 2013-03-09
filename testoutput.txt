@@ -1,24 +1,104 @@
 Sort attribute: 1
 6 Hart Christina 73113
+1 Weber Nelson 17090
+¢bÿ
+Sort attribute: 1
 4 Ho Dennis 87987
 3 Lowry Jane 94671
-1 Weber Nelson 17090
+
+Sort attribute: 1
+7 Cash Warren 27478
+8 Dunn Claire 106765
 
 Sort attribute: 1
 2 Bradley Susan 60726
-7 Cash Warren 27478
-8 Dunn Claire 106765
 9 Webb Bradley 21258
-
-Sort attribute: 1
+b¢bÿ
+Sort attribute: 0
 6 Hart Christina 73113
+1 Weber Nelson 17090
+œjÿ
+Sort attribute: 0
 4 Ho Dennis 87987
 3 Lowry Jane 94671
-1 Weber Nelson 17090
 
-Sort attribute: 1
-2 Bradley Susan 60726
+Sort attribute: 0
 7 Cash Warren 27478
 8 Dunn Claire 106765
-9 Webb Bradley 21258
 
+Sort attribute: 0
+9 Webb Bradley 21258
+2 Bradley Susan 60726
+Rœjÿ
+Sort attribute: 0
+6 Hart Christina 73113
+1 Weber Nelson 17090
+²lÿ
+Sort attribute: 0
+4 Ho Dennis 87987
+3 Lowry Jane 94671
+
+Sort attribute: 0
+7 Cash Warren 27478
+8 Dunn Claire 106765
+
+Sort attribute: 0
+9 Webb Bradley 21258
+2 Bradley Susan 60726
+¢²lÿ
+Sort attribute: 0
+6 Hart Christina 73113
+1 Weber Nelson 17090
+çlÿ
+Sort attribute: 0
+4 Ho Dennis 87987
+3 Lowry Jane 94671
+
+Sort attribute: 0
+7 Cash Warren 27478
+8 Dunn Claire 106765
+
+Sort attribute: 0
+9 Webb Bradley 21258
+2 Bradley Susan 60726
+"çlÿ
+6 Hart Christina 73113
+1 Weber Nelson 17090
+4 Ho Dennis 87987
+3 Lowry Jane 94671
+-ë–ÿ7 Cash Warren 27478
+8 Dunn Claire 106765
+9 Webb Bradley 21258
+2 Bradley Susan 60726
+6 Hart Christina 73113
+1 Weber Nelson 17090
+4 Ho Dennis 87987
+3 Lowry Jane 94671
+-ë–ÿ7 Cash Warren 27478
+8 Dunn Claire 106765
+9 Webb Bradley 21258
+2 Bradley Susan 60726
+6 Hart Christina 73113
+1 Weber Nelson 17090
+4 Ho Dennis 87987
+3 Lowry Jane 94671
+-ë–ÿ7 Cash Warren 27478
+8 Dunn Claire 106765
+9 Webb Bradley 21258
+2 Bradley Susan 60726
+6 Hart Christina 73113
+1 Weber Nelson 17090
+4 Ho Dennis 87987
+3 Lowry Jane 94671
+-ë–ÿ7 Cash Warren 27478
+8 Dunn Claire 106765
+9 Webb Bradley 21258
+2 Bradley Susan 60726
+6 Hart Christina 73113
+1 Weber Nelson 17090
+4 Ho Dennis 87987
+3 Lowry Jane 94671
+-ë–ÿ7 Cash Warren 27478
+8 Dunn Claire 106765
+9 Webb Bradley 21258
+2 Bradley Susan 60726

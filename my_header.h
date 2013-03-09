@@ -2,9 +2,10 @@
 #define MAX_ARG_SIZE 200
 #define YES 1
 #define NO 0
-#define DEBUG 1 /*** set to true to log output ****/
+ /*** set to true to log output ****/
+#define DEBUG 0
 
-#define println(...) printf("%d:\t", __LINE__); printf( __VA_ARGS__ ); printf("\n")
+#define println(...) if ( DEBUG ) { printf("%d:\t", __LINE__); }  printf( __VA_ARGS__ ); printf("\n")
 #define log(...) if ( DEBUG ) { printf("%d:\t", __LINE__); printf( __VA_ARGS__ ); printf("\n"); }
 #define strEqual(a, b) !strcmp(a, b)
 #define BUFF_SIZE 12
@@ -12,9 +13,9 @@
 
 #define OUTFILE "testoutput.txt"
 #define INPUTFILE "records1.txt"
-#define SORT_ATTR KEY_LASTNAME
+#define SORT_ATTR KEY_SSN
 #define EXEC_NAME "sort"
-#define NUM_WORKERS 2
+#define NUM_WORKERS 4
 
 #define READ 0
 #define WRITE 1
