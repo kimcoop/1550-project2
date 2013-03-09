@@ -18,17 +18,7 @@ long numRecsPerSorter( Coordinator* coord ) {
   }
 } // determineNumSorters
 
-void read_from_pipe (int file) {
-   println(" read_from_pipe ");
-   FILE *stream;
-   int c;
-   stream = fdopen (file, "r");
-   while ((c = fgetc (stream)) != EOF)
-     putchar (c);
-   fclose (stream);
-}
-
-void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename, numWorkers, sortAttr, executableName );
+void deploySorters( Merger* merger, Coordinator* coord ) {
   
   long recsPerSorter = numRecsPerSorter( coord );
 
@@ -39,12 +29,10 @@ void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename,
     for ( i = 0; i < coord->numWorkers; i++ ) {
       int childStatus;
       
-      if ( pipe(merger->pipes[i]) < 0 ) {
+      if ( pipe(merger->pipes[i]) < 0 )
         println("Failed to create master pipe");
-      }
-
       if ( (pid = fork()) < 0 ) {
-        println("Failed to fork master");
+        println("Failed to fork pipe");
       } else if ( pid == 0 ) { // child
         println("CHILD PROCESS");
         
@@ -52,7 +40,6 @@ void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename,
         // execlp("sort", "sort", (char *)NULL);
         
         Sorter* sorter = initSorter( coord, recsPerSorter, i );
-        println( " sorter-> i begin %d", sorter->begin);
         deploySorter( merger->pipes[i], sorter );
           
       } else { // parent
@@ -60,7 +47,7 @@ void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename,
         println("PARENT PROCESS. child status %d", childStatus);
         if ( WIFEXITED(childStatus) && WEXITSTATUS(childStatus) == SORTER_SUCCESS ) {
           println("%d", childStatus);
-          mergeSorter( merger, i ); // get the data from our pipes array
+          mergeSorter( coord, merger, i ); // get the data from our pipes array
         }
       }
     }
@@ -71,6 +58,7 @@ Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char
 
   Coordinator *coord =  (Coordinator*) malloc( sizeof( Coordinator )+1 );
   strcpy( coord->filename, filename );
+  strcpy( coord->sortProgram, sortProgram );
   coord->numWorkers = numWorkers;
   coord->sortAttr = sortAttr;
   switch ( sortAttr ) {
@@ -89,6 +77,5 @@ Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char
     default:
       strcpy( coord->sortType, "int" );
   }
-  strcpy( coord->sortProgram, sortProgram );
   return coord;
 } // initCoordinator

@@ -27,14 +27,6 @@ Due March 07, 2013
 //   }
 // } // my_handler
 
-
-// void writeFile( char* filename, char* str ) {
-//   FILE *file;
-//   file = fopen( filename, "a+" ); // append file (add text to a file or create a file if it does not exist)
-//   fprintf( file, "%s", str ); // write
-//   fclose( file );
-// } // writeFile
-
 int main( int argc, char *argv[] ) {
 
   int numFlags = argc-1, numWorkers, sortAttr;

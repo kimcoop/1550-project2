@@ -1,7 +1,7 @@
 
 
-void write_to_pipe( MyRecord** records, int file, int len, int attr ) {
-  println(" write_to_pipe");
+void writeToPipe( MyRecord** records, int file, int len, int attr ) {
+  println(" writeToPipe");
   FILE *stream = fdopen( file, "w" );
   
   int i;
@@ -53,7 +53,7 @@ void deploySorter( int* myPipe, Sorter* sorter ) {
       MyRecord* recordPtr = ( MyRecord* ) malloc( sizeof( MyRecord)+1 );
       MyRecord record;
       fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
-      if ( numRecsSkipped >= sorter->begin ) { // TODO: this is SUPER HACKY
+      if ( numRecsSkipped >= sorter->begin ) { // hacky, should use fseek if possible
         recordPtr->ssn = record.ssn;
         strcpy( recordPtr->LastName, record.LastName );
         strcpy( recordPtr->FirstName, record.FirstName );
@@ -70,7 +70,7 @@ void deploySorter( int* myPipe, Sorter* sorter ) {
   sortRecords( records, sorter->numRecs, sorter->sortAttr );
 
   close( myPipe[READ] );
-  write_to_pipe( records, myPipe[WRITE], sorter->numRecs, sorter->sortAttr );
+  writeToPipe( records, myPipe[WRITE], sorter->numRecs, sorter->sortAttr );
   close( myPipe[WRITE] );
 
   log( "Child exiting." );
@@ -78,13 +78,6 @@ void deploySorter( int* myPipe, Sorter* sorter ) {
 
 } // deploySorter
 
-// // *get:  read n bytes from position pos 
-// int get(int fd, long pos, char *buf, int n)  {
-//  if ( lseek( fd, pos, 0 ) >= 0 )
-//    return read( fd, buf, n );
-//  else
-//    return -1;
-// }
 
 /******************************************
  SORTING

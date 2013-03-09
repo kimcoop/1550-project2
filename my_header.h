@@ -33,7 +33,7 @@ void deploySorters( Merger*, Coordinator* );
 long numRecsPerSorter( Coordinator* );
 Coordinator* initCoordinator( char*, int, int, char*);
 
-void writeFile( char*, char* );
+void writeToFile( char*, char* );
 MyRecord** loadRecords( int, char* );
 
 /* SORTERS */
@@ -55,8 +55,9 @@ static int  a_size = 0;
 
 /* MERGER */
 int **generatePipes( int );
-void mergeSorter( Merger* merger, int );
+void mergeSorter( Coordinator*, Merger*, int );
 Merger* initMerger( int );
+char* readFromPipe( int );
 
 /* ERRORS */
 void readFile(char  *);
