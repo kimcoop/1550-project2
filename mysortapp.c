@@ -27,11 +27,13 @@ int main( int argc, char *argv[] ) {
   char executableName[MAX_ARG_SIZE]; char type[MAX_ARG_SIZE]; char order[MAX_ARG_SIZE]; char outputFile[MAX_ARG_SIZE];
 
   if ( numFlags < 2 ) {
-    log( "No commands provided." );
-    numWorkers = 2; // some defaults for debugging/testing
-    sortAttr = SORT_ATTR;
-    strcpy( executableName, "testExe" );
+    log( "No commands provided. Using default values in my_header.h" );
+    strcpy( executableName, EXEC_NAME );
     strcpy( filename, INPUTFILE );
+    strcpy( outputFile, OUTFILE );
+
+    numWorkers = NUM_WORKERS;
+    sortAttr = SORT_ATTR;
 
   } else { // flags are  present
     if ( numFlags % 2 != 0 ) {

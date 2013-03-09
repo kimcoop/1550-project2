@@ -13,6 +13,8 @@
 #define OUTFILE "testoutput.txt"
 #define INPUTFILE "records1.txt"
 #define SORT_ATTR KEY_LASTNAME
+#define EXEC_NAME "sort"
+#define NUM_WORKERS 2
 
 #define READ 0
 #define WRITE 1
