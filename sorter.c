@@ -113,39 +113,45 @@ int intcmp( const void *n1, const void *n2 ) {
   return (num1 < num2) ? -1 : (num1 > num2);
 }
 
-int structCmpString( const void *struct_a, const void *struct_b ) { 
+int structCmpFirst( const void *struct_a, const void *struct_b ) { 
+  // struct_a and struct_b are pointers to an element of the array, aka pointers to pointers to structs. must cast it, then dereference it.
+  MyRecord *a = *( MyRecord ** ) struct_a;
+  MyRecord *b = *( MyRecord ** ) struct_b;
+  println (" comparing %s and %s ", a->FirstName, b->FirstName ) ;
+  return strcmp(  a->FirstName, b->FirstName ); 
+} //  structCmpFirst
 
-  MyRecord *a = ( MyRecord * ) struct_a;
-  MyRecord *b = ( MyRecord * ) struct_b;
-
+int structCmpLast( const void *struct_a, const void *struct_b ) { 
+  MyRecord *a = *( MyRecord ** ) struct_a;
+  MyRecord *b = *( MyRecord ** ) struct_b;
   println (" comparing %s and %s ", a->LastName, b->LastName ) ;
-  // if ( attr == KEY_LASTNAME )
-    return strcmp(  a->LastName, b->LastName ); 
-  // else 
-    // return strcmp(  a->FirstName, b->FirstName );
+  return strcmp(  a->LastName, b->LastName ); 
+} //  structCmpLast
 
-} // structCmp
+int structCmpSsn( const void *struct_a, const void *struct_b ) { 
+  MyRecord *a = *( MyRecord ** ) struct_a;
+  MyRecord *b = *( MyRecord ** ) struct_b;
+  return intcmp(  &a->ssn, &b->ssn );
+} // structCmp structCmpSsn
 
-int structCmpInt( const void *struct_a, const void *struct_b ) { 
-
-  MyRecord *a = ( MyRecord * ) struct_a;
-  MyRecord *b = ( MyRecord * ) struct_b;
-
-  // if ( attr == KEY_SSN )
-  //   return intcmp(  &a->ssn, &b->ssn ); 
-  // else
-    return intcmp(  &a->income, &b->income );
-
-} // structCmp
-
+int structCmpIncome( const void *struct_a, const void *struct_b ) { 
+  MyRecord *a = *( MyRecord ** ) struct_a;
+  MyRecord *b = *( MyRecord ** ) struct_b;
+  return intcmp(  &a->income, &b->income );
+} // structCmp structCmpIncome
 
 void sortRecords( MyRecord** records, int numRecs, int attr ) {
   println(" sortRecords ");
   
-  if ( attr == KEY_LASTNAME || attr == KEY_FIRSTNAME )
-    qsort( records, numRecs, sizeof( MyRecord* ), structCmpString );
+  if ( attr == KEY_LASTNAME )
+    qsort( records, numRecs, sizeof( MyRecord* ), structCmpLast );
+  else if ( attr == KEY_FIRSTNAME  )
+    qsort( records, numRecs, sizeof( MyRecord* ), structCmpFirst );
+  else if ( attr == KEY_SSN )
+    qsort( records, numRecs, sizeof( MyRecord ), structCmpSsn );
   else
-    qsort( records, numRecs, sizeof( MyRecord ), structCmpInt );
+    qsort( records, numRecs, sizeof( MyRecord ), structCmpIncome );
+
 
 } // sortRecords
 
