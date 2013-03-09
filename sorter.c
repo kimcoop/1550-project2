@@ -1,20 +1,21 @@
-     
-void write_to_pipe( MyRecord** records, int file, int len, int attr ) {  // TODO - assumes string (sorting attr)
+
+
+void write_to_pipe( MyRecord** records, int file, int len, int attr ) {
   println(" write_to_pipe");
-  FILE *stream;
-  stream = fdopen (file, "w");
-  fprintf( stream, "hello, world!xx\n" );
-  fprintf( stream, "goodbye, world!xx\n" );
+  FILE *stream = fdopen( file, "w" );
   
   int i;
   for ( i = 0; i < len; i++ ) {
     MyRecord* rec = (MyRecord*) records[i];
-    if ( attr == KEY_LASTNAME ) { // TODO - this isn't DRY :(
+    if ( attr == KEY_LASTNAME )
       fprintf( stream, "%s\n", rec->LastName );
-    } else {
-      fprintf( stream, "%s\n", rec->FirstName ); // firstName
-    } // for
-  }
+    else if ( attr == KEY_FIRSTNAME )
+      fprintf( stream, "%s\n", rec->FirstName );
+    else if ( attr == KEY_SSN )
+      fprintf( stream, "%d\n", rec->ssn );
+    else 
+      fprintf( stream, "%d\n", rec->income );
+  } // for
 
    fclose( stream );
  }
@@ -22,23 +23,24 @@ void write_to_pipe( MyRecord** records, int file, int len, int attr ) {  // TODO
 
 Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
 
-    Sorter* sorter = (Sorter*) malloc( sizeof(Sorter)+1 );
+    Sorter* sorter = ( Sorter* ) malloc( sizeof(Sorter) + 1 );
     strcpy( sorter->filename, coord->filename );
+    strcpy( sorter->sortProgram, coord->sortProgram );
+    strcpy( sorter->sortType, coord->sortType );
     sorter->pos = pos;
     sorter->begin = numRecsPerSorter * pos;
     sorter->numRecs = numRecsPerSorter;
     sorter->sortAttr = coord->sortAttr;
-    strcpy( sorter->sortProgram, coord->sortProgram );
-    strcpy( sorter->sortType, coord->sortType );
     return sorter;
 
 } // initSorter
 
-void deploySorter( int* m_pipe, Sorter* sorter ) {
+void deploySorter( int* myPipe, Sorter* sorter ) {
 
   println("deploySorter begin at: %d", sorter->begin);
 
   MyRecord* records[ sorter->numRecs ];
+  sorter->records = records; // attach records
   FILE  *fp = NULL;
   char separator;
   if ( (fp = fopen( sorter->filename, "r" )) == NULL ) {
@@ -52,7 +54,6 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
       MyRecord record;
       fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
       if ( numRecsSkipped >= sorter->begin ) { // TODO: this is SUPER HACKY
-        printf("Parsing record %d: %d %s %s %d \n", i, record.ssn, record.LastName, record.FirstName, record.income);
         recordPtr->ssn = record.ssn;
         strcpy( recordPtr->LastName, record.LastName );
         strcpy( recordPtr->FirstName, record.FirstName );
@@ -68,16 +69,12 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
 
   sortRecords( records, sorter->numRecs, sorter->sortAttr );
 
-  close(m_pipe[READ]);
-  write_to_pipe( records, m_pipe[WRITE], sorter->numRecs, sorter->sortAttr );
-  close(m_pipe[WRITE]);
+  close( myPipe[READ] );
+  write_to_pipe( records, myPipe[WRITE], sorter->numRecs, sorter->sortAttr );
+  close( myPipe[WRITE] );
 
-
-  println("sorter pos %d", sorter->pos);
-
-  int rc = 37;
-  log("Child exiting (status = %d (0x%.2X))\n", rc, rc);
-  exit(rc);
+  log( "Child exiting." );
+  exit( SORTER_SUCCESS );
 
 } // deploySorter
 
@@ -93,19 +90,6 @@ void deploySorter( int* m_pipe, Sorter* sorter ) {
  SORTING
 ******************************************/
 
-void print_cstring_array( char **array, int len ) { 
-    int i;
-    for ( i = 0; i < len; i++ ) 
-      printf("%s | ", array[i]);
-    putchar('\n');
-}
-
-void print_int_array( int *array, int len ) { 
-    int i;
-    for ( i = 0; i < len; i++ ) 
-      printf("%d | ", array[i]);
-    putchar('\n');
-} 
 
 int intcmp( const void *n1, const void *n2 ) {
   const int num1 = *(const int *) n1;
@@ -114,35 +98,31 @@ int intcmp( const void *n1, const void *n2 ) {
 }
 
 int structCmpFirst( const void *struct_a, const void *struct_b ) { 
-  // struct_a and struct_b are pointers to an element of the array, aka pointers to pointers to structs. must cast it, then dereference it.
-  MyRecord *a = *( MyRecord ** ) struct_a;
-  MyRecord *b = *( MyRecord ** ) struct_b;
+  // struct_a and struct_b are pointers to an element of the array, aka pointers to pointers to structs. must cast it, then dereference it
+  MyRecord *a = *( MyRecord ** ) struct_a; MyRecord *b = *( MyRecord ** ) struct_b;
   println (" comparing %s and %s ", a->FirstName, b->FirstName ) ;
   return strcmp(  a->FirstName, b->FirstName ); 
 } //  structCmpFirst
 
 int structCmpLast( const void *struct_a, const void *struct_b ) { 
-  MyRecord *a = *( MyRecord ** ) struct_a;
-  MyRecord *b = *( MyRecord ** ) struct_b;
+  MyRecord *a = *( MyRecord ** ) struct_a; MyRecord *b = *( MyRecord ** ) struct_b;
   println (" comparing %s and %s ", a->LastName, b->LastName ) ;
   return strcmp(  a->LastName, b->LastName ); 
 } //  structCmpLast
 
 int structCmpSsn( const void *struct_a, const void *struct_b ) { 
-  MyRecord *a = *( MyRecord ** ) struct_a;
-  MyRecord *b = *( MyRecord ** ) struct_b;
+  MyRecord *a = *( MyRecord ** ) struct_a; MyRecord *b = *( MyRecord ** ) struct_b;
   return intcmp(  &a->ssn, &b->ssn );
 } // structCmp structCmpSsn
 
 int structCmpIncome( const void *struct_a, const void *struct_b ) { 
-  MyRecord *a = *( MyRecord ** ) struct_a;
-  MyRecord *b = *( MyRecord ** ) struct_b;
+  MyRecord *a = *( MyRecord ** ) struct_a; MyRecord *b = *( MyRecord ** ) struct_b;
   return intcmp(  &a->income, &b->income );
 } // structCmp structCmpIncome
 
 void sortRecords( MyRecord** records, int numRecs, int attr ) {
   println(" sortRecords ");
-  
+
   if ( attr == KEY_LASTNAME )
     qsort( records, numRecs, sizeof( MyRecord* ), structCmpLast );
   else if ( attr == KEY_FIRSTNAME  )

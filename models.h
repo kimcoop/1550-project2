@@ -26,9 +26,10 @@ typedef struct {
 	int sortAttr;
 	char sortType[BUFF_SIZE];
 	char sortProgram[BUFF_SIZE];
+	MyRecord** records;
 } Sorter;
 
 typedef struct{
 	int id;
-	int* write_pipes; // pointer to array
+	int **pipes;
 } Merger;

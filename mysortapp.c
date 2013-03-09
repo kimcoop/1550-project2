@@ -20,42 +20,20 @@ Due March 07, 2013
 #include  "sorter.c"
 
 
-static void my_handler( int signum ) {
-  if ( signum == SIGUSR1 ) {
-    completed_sorters = completed_sorters+1;
-    println("Received SIGUSR1.Incrementing completed_sorters to %d", completed_sorters);
-  }
-} // my_handler
-
-void writeFile( char* filename, char* str ) {
-  FILE *file;
-  file = fopen( filename, "a+" ); // append file (add text to a file or create a file if it does not exist)
-  fprintf( file, "%s", str ); // write
-  fclose( file );
-} // writeFile
-
-// MyRecord** loadRecords( int numRecords, char* filename ) {
-//   MyRecord* records[ numRecords ];
-//   FILE  *fp = NULL;
-//   char separator;
-//   if ( (fp = fopen( filename, "r" )) == NULL ) {
-//     println("Unknown file");
-//     exit(1);
-//   } else {
-//     while ( !feof(fp) ) {
-//       int i = 0;
-//       // struct MyRecord* record = (struct MyRecord*) malloc( sizeof( struct MyRecord)+1 );
-//       MyRecord record;
-//       fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
-//       printf("Parsing record %d: %d %s %s %d \n", i, record.ssn, record.LastName, record.FirstName, record.income);
-//       records[ i ] = &record;
-//       i++;
-//     } // end while
-
-//     fclose(fp);
+// static void my_handler( int signum ) {
+//   if ( signum == SIGUSR1 ) {
+//     completed_sorters = completed_sorters+1;
+//     println("Received SIGUSR1.Incrementing completed_sorters to %d", completed_sorters);
 //   }
-//   return records;
-// } // loadFile
+// } // my_handler
+
+
+// void writeFile( char* filename, char* str ) {
+//   FILE *file;
+//   file = fopen( filename, "a+" ); // append file (add text to a file or create a file if it does not exist)
+//   fprintf( file, "%s", str ); // write
+//   fclose( file );
+// } // writeFile
 
 int main( int argc, char *argv[] ) {
 
@@ -87,16 +65,15 @@ int main( int argc, char *argv[] ) {
         else if ( strEqual(flag, "-t") ) {  strcpy( type, flagValue ); } 
         else if ( strEqual(flag, "-o") ) {  strcpy( order, flagValue );  } 
         else if ( strEqual(flag, "-s") ) {  strcpy( outputFile, flagValue ); } 
-        else {
+        else
           println( "Flag %s not recognized.", flag  );
-        }
       }
     }
   }
 
 
   Coordinator* coord = initCoordinator( filename, numWorkers, sortAttr, executableName );
-  Merger* merger = initMerger( numWorkers );
+  Merger* merger = initMerger( numWorkers ); // generates pipes
   deploySorters( merger, coord );
 
   return 0;

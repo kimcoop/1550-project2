@@ -1,20 +1,21 @@
 
 
-long numRecordsPerSorter( FILE* fp, int numWorkers ) {
-
-  fseek (fp, 0, SEEK_END); // check number of records
-  long lSize = ftell( fp );
-  rewind( fp );// TODO: this doesn't include lines that are less than the BUFF_SIZE from struct
-  int numRecs = lSize / sizeof( MyRecord );
-
-  long recsPerSorter = (long) numRecs / numWorkers;
-
-  // log("NumWorkers is %d", numWorkers);
-  // log("Records found in file %d", numRecs);
-  log("Records per worker is %lu ", recsPerSorter );
-  log("---");
-
-  return ( lSize > 0 && sizeof(MyRecord) >lSize) ? 1  : recsPerSorter;
+long numRecsPerSorter( Coordinator* coord ) {
+  FILE* fp = fopen( coord->filename, "r" );
+  if ( fp==NULL ) {
+    println("Cannot open file\n");
+    return;
+  } else {
+    fseek (fp, 0, SEEK_END); // check number of records
+    long lSize = ftell( fp );
+    rewind( fp );// TODO: this doesn't include lines that are less than the BUFF_SIZE from struct
+    fclose( fp );
+    int numRecs = lSize / sizeof( MyRecord );
+    long recsPerSorter = (long) numRecs / coord->numWorkers;
+    log("Records per worker is %lu ", recsPerSorter );
+    log("---");
+    return ( lSize > 0 && sizeof(MyRecord) >lSize) ? 1  : recsPerSorter;
+  }
 } // determineNumSorters
 
 void read_from_pipe (int file) {
@@ -29,50 +30,41 @@ void read_from_pipe (int file) {
 
 void deploySorters( Merger* merger, Coordinator* coord ) { //coord = ( filename, numWorkers, sortAttr, executableName );
   
-  FILE* fp = fopen( coord->filename, "r" );
-  long numRecsPerSorter;
-  if ( fp==NULL ) {
-    println("Cannot open file\n");
-    return;
-  } else {
-    numRecsPerSorter = numRecordsPerSorter( fp, coord->numWorkers );
-  }
+  long recsPerSorter = numRecsPerSorter( coord );
 
-  fclose( fp );
-  if ( numRecsPerSorter > 0 ) {
+  if ( recsPerSorter > 0 ) {
     int i;
+    pid_t pid;
+
     for ( i = 0; i < coord->numWorkers; i++ ) {
-      int child_status;
-      int m_pipe[2];
-      pid_t pid;
-      if ( pipe(m_pipe) < 0 ) {
-          println("Failed to create master pipe");
+      int childStatus;
+      
+      if ( pipe(merger->pipes[i]) < 0 ) {
+        println("Failed to create master pipe");
       }
+
       if ( (pid = fork()) < 0 ) {
-          println("Failed to fork master");
-      } else if ( pid == 0 ) {
-          println("CHILD PROCESS");
+        println("Failed to fork master");
+      } else if ( pid == 0 ) { // child
+        println("CHILD PROCESS");
+        
+        // Exec the sort program execl("/bin/sort", "sort",  (char*) NULL);
+        // execlp("sort", "sort", (char *)NULL);
+        
+        Sorter* sorter = initSorter( coord, recsPerSorter, i );
+        println( " sorter-> i begin %d", sorter->begin);
+        deploySorter( merger->pipes[i], sorter );
           
-          // Exec the sort program execl("/bin/sort", "sort",  (char*) NULL);
-          // sort here
-          Sorter* sorter = initSorter( coord, numRecsPerSorter, i );
-          deploySorter( m_pipe, sorter );
-          
-      } else {   
-          wait(&child_status);
-          println("PARENT PROCESS");
-          close(m_pipe[WRITE]);
-          read_from_pipe( m_pipe[READ] );
-          close(m_pipe[READ]);
-          merger->write_pipes[n_pipes++] = m_pipe[WRITE];
-          // when the child at ( read_pipe = sorter->pos, write_pipe = sorter->pos+1 )
-          // is done sorting, it signals via a signal handler that it is done / contents sorted.
-          // then the merger node will retrieve the sorted contents from the pipe.
+      } else { // parent
+        wait( &childStatus );
+        println("PARENT PROCESS. child status %d", childStatus);
+        if ( WIFEXITED(childStatus) && WEXITSTATUS(childStatus) == SORTER_SUCCESS ) {
+          println("%d", childStatus);
+          mergeSorter( merger, i ); // get the data from our pipes array
+        }
       }
-
     }
-
-  } // numRecsPerSorter > 0
+  } // recsPerSorter > 0
 } // deploySorters
 
 Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char* sortProgram  ) {
