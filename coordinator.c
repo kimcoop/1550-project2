@@ -18,7 +18,7 @@ long numRecsPerSorter( Coordinator* coord ) {
 } // determineNumSorters
 
 void deploySorters( Merger* merger, Coordinator* coord ) {
-  println("Deploying sorters.");
+  println("Deploying %d sorters.", coord->numWorkers);
 
   long recsPerSorter = numRecsPerSorter( coord );
 

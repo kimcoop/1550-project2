@@ -46,25 +46,27 @@ int main( int argc, char *argv[] ) {
   } else { // overwrite defaults
     
     int i;
-    for ( i = 1; i < argc; i+=2 ) {
-      strcpy( flag, argv[i] );
-      strcpy( flagValue, argv[i+1] );
+    for ( i = 1; i < argc; i += 2 ) {
+      strcpy( flag, argv[ i ] );
+      strcpy( flagValue, argv[ i+1 ] );
 
-      if ( strEqual(flag, "-k") ) {  numWorkers = atoi( flagValue );  }
-      else if ( strEqual(flag, "-e") ) {  strcpy( executableName, flagValue  ); } 
-      else if ( strEqual(flag, "-a") ) {  sortAttr = atoi( flagValue );  } 
-      else if ( strEqual(flag, "-t") ) {  strcpy( type, flagValue ); } 
-      else if ( strEqual(flag, "-o") ) {  strcpy( order, flagValue );  } 
-      else if ( strEqual(flag, "-s") ) {  strcpy( outputFile, flagValue ); } 
-      else
-        println( "Flag %s not recognized.", flag  );
+      if ( strEqual(flag, "-e") ) 
+        strcpy( executableName, flagValue  );
+      else if ( strEqual(flag, "-t") ) 
+        strcpy( type, flagValue ); 
+      else if ( strEqual(flag, "-o") ) 
+        strcpy( order, flagValue );  
+      else if ( strEqual(flag, "-s") ) 
+        strcpy( outputFile, flagValue ); 
+      else if ( strEqual(flag, "-a") ) 
+        sortAttr = atoi( flagValue );  
+      else if ( strEqual(flag, "-k") ) 
+        numWorkers = atoi( flagValue );
     }
   }
 
-  if ( filename == INPUTFILE )
-    println( "No input file given. Using %s", filename );
-  if ( outputFile == OUTFILE ) // not user-provided; using default
-    println( "No output file given. Using %s", outputFile );
+  println( "Input file = %s", filename );
+  println( "Output file = %s\n", outputFile );
 
   Coordinator* coord = initCoordinator( filename, numWorkers, sortAttr, executableName );
   Merger* merger = initMerger( numWorkers ); // generates pipes
