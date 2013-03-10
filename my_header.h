@@ -3,8 +3,8 @@
 #define YES 1
 #define NO 0
 
- /*** set to true to log output ****/
-#define DEBUG 1
+ /*** SET THIS VALUE TO 1 TO LOG OUTPUT ****/
+#define DEBUG 0
 
 #define println(...) if ( DEBUG ) { printf("%d:\t", __LINE__); }  printf( __VA_ARGS__ ); printf("\n")
 #define log(...) if ( DEBUG ) { printf("%d:\t", __LINE__); printf( __VA_ARGS__ ); printf("\n"); }
@@ -12,8 +12,8 @@
 #define BUFF_SIZE 12
 #define FILENAME_BUFF_SIZE 32
 
-#define OUTFILE "testoutput.txt"
-#define INPUTFILE "records1.txt"
+#define OUTFILE "output.txt"
+#define INPUTFILE "records5.txt"
 #define SORT_ATTR KEY_SSN
 #define EXEC_NAME "sort"
 #define NUM_WORKERS 4

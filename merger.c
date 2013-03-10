@@ -36,6 +36,7 @@ void mergeSorter( Coordinator* coord, Merger* merger, int index ) {
   if ( merger->numFinished == coord->numWorkers ) { // all workers have completed
     if ( raise(SIGUSR1) != 0 ) {
       println("Error raising the signal.");
+      // TODO: parse the file of sorted MyRecs here 
     }
   }
 }

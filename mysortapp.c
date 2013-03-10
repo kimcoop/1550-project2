@@ -43,6 +43,7 @@ void attrName( int attr ) {
 
 int main( int argc, char *argv[] ) {
 
+  
   int numFlags = argc-1, numWorkers, sortAttr;
   char flag[2]; char flagValue[MAX_ARG_SIZE];
   char filename[MAX_ARG_SIZE];
@@ -59,7 +60,8 @@ int main( int argc, char *argv[] ) {
 
   if ( numFlags % 2 != 0 || argc == 1 ) { // --help for help
 
-    strcpy( flagValue, argv[ 1 ] );
+    if (argc ==2 ) strcpy( flagValue, argv[ 1 ] );
+    
     if ( !strEqual( flagValue, "--defaults") && !strEqual( flagValue, "-defaults") && !strEqual( flagValue, "--d")) { // --defaults or -defaults or --d for default values
       println("Flags:");
       println( " -s \t output file name");
