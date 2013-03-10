@@ -29,7 +29,7 @@ void mergeSorter( Coordinator* coord, Merger* merger, int index ) {
 
   merger->numFinished = merger->numFinished + 1; // increment
 
-  if ( merger->numFinished % 4 == 0 ) 
+  if ( coord->numWorkers < 8 || merger->numFinished % 4 == 0 ) // output every so often
     println("...running...");
 
   if ( merger->numFinished == coord->numWorkers ) { // all workers have completed
@@ -41,7 +41,7 @@ void mergeSorter( Coordinator* coord, Merger* merger, int index ) {
 
 void writeToFile( char* filename, char* str ) {
   FILE *file;
-  file = fopen( filename, "a+" ); // append file (add text to a file or create a file if it does not exist)
+  file = fopen( filename, "ab+" ); // append file (add text to a file or create a file if it does not exist)
   fprintf( file, "%s", str ); // write
   if ( DEBUG ) fprintf( file, "\n" );
   fclose( file );

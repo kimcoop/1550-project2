@@ -2,8 +2,9 @@
 #define MAX_ARG_SIZE 200
 #define YES 1
 #define NO 0
+
  /*** set to true to log output ****/
-#define DEBUG 0
+#define DEBUG 1
 
 #define println(...) if ( DEBUG ) { printf("%d:\t", __LINE__); }  printf( __VA_ARGS__ ); printf("\n")
 #define log(...) if ( DEBUG ) { printf("%d:\t", __LINE__); printf( __VA_ARGS__ ); printf("\n"); }
@@ -16,6 +17,7 @@
 #define SORT_ATTR KEY_SSN
 #define EXEC_NAME "sort"
 #define NUM_WORKERS 4
+#define ORDER "ASC"
 
 #define READ 0
 #define WRITE 1

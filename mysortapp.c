@@ -21,8 +21,24 @@ Due March 07, 2013
 
 static void sigHandler( int signum ) {
   if ( signum == SIGUSR1 ) {
+    println("");
     println("*************");
     println("All sorters have completed execution.");
+  }
+}
+
+void attrName( int attr ) {
+  switch ( attr ) {
+    case KEY_SSN:
+      println( "SSN" ); break;
+    case KEY_LASTNAME:
+      println( "firstName" ); break;
+    case KEY_FIRSTNAME:
+      println( "lastName" ); break;
+    case KEY_INCOME:
+      println( "income" ); break;
+    default:
+      println( "(invalid)" ); break;
   }
 }
 
@@ -34,15 +50,17 @@ int main( int argc, char *argv[] ) {
   char executableName[MAX_ARG_SIZE]; char type[MAX_ARG_SIZE]; char order[MAX_ARG_SIZE]; 
   char outputFile[MAX_ARG_SIZE];
 
+  // set defaults from my_header.h
   strcpy( executableName, EXEC_NAME );
   strcpy( filename, INPUTFILE );
   strcpy( outputFile, OUTFILE );
-
+  strcpy( order, ORDER );
   numWorkers = NUM_WORKERS;
   sortAttr = SORT_ATTR;
 
   if ( numFlags % 2 != 0 ) {
     println( "Malformed flags. Please re-enter." );
+    return EXIT_FAILURE;
   } else { // overwrite defaults
     
     int i;
@@ -55,21 +73,28 @@ int main( int argc, char *argv[] ) {
       else if ( strEqual(flag, "-t") ) 
         strcpy( type, flagValue ); 
       else if ( strEqual(flag, "-o") ) 
-        strcpy( order, flagValue );  
+        strcpy( order, flagValue );
       else if ( strEqual(flag, "-s") ) 
-        strcpy( outputFile, flagValue ); 
+        strcpy( outputFile, flagValue );
       else if ( strEqual(flag, "-a") ) 
         sortAttr = atoi( flagValue );  
       else if ( strEqual(flag, "-k") ) 
         numWorkers = atoi( flagValue );
+      else if ( strEqual(flag, "-i") ) 
+        strcpy( filename, flagValue ); 
     }
   }
 
   println( "Input file = %s", filename );
-  println( "Output file = %s\n", outputFile );
+  println( "Output file = %s", outputFile );
+  println( "Sort attribute = %d ", sortAttr);
+  println( "Sort order = %s", order );
+  println( "Number of workers = %d", numWorkers );
+  println( "Executable name = %s", executableName );
+  println("");
 
   Coordinator* coord = initCoordinator( filename, numWorkers, sortAttr, executableName );
-  Merger* merger = initMerger( numWorkers ); // generates pipes
+  Merger* merger = initMerger( numWorkers );
 
   if ( signal(SIGUSR1, sigHandler) == SIG_ERR ) {
     println("An error occurred while setting a signal handler.");

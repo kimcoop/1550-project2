@@ -11,9 +11,15 @@ long numRecsPerSorter( Coordinator* coord ) {
     rewind( fp );// TODO: this doesn't include lines that are less than the BUFFER_SIZE from struct
     fclose( fp );
     int numRecs = lSize / sizeof( MyRecord );
+    log("Number of records found in file = %d ", numRecs );
+    if ( numRecs < coord->numWorkers ) {
+      println("Too many workers (fewer records in file [%d] than workers [%d])", numRecs, coord->numWorkers);
+      println("Decreasing number of workers to %d", numRecs);
+      coord->numWorkers = numRecs;
+    }
     long recsPerSorter = (long) numRecs / coord->numWorkers;
-    log("Calculated number of records per worker = %lu .", recsPerSorter );
-    return ( lSize > 0 && sizeof(MyRecord) >lSize) ? 1  : recsPerSorter;
+    log("Calculated number of records per worker = %lu", recsPerSorter );
+    return ( lSize > 0 && sizeof(MyRecord) > lSize) ? 1  : recsPerSorter;
   }
 } // determineNumSorters
 
@@ -41,7 +47,7 @@ void deploySorters( Merger* merger, Coordinator* coord ) {
         wait( &childStatus );
         log("In parent.");
         if ( WIFEXITED(childStatus) && WEXITSTATUS(childStatus) == SORTER_SUCCESS ) {
-          log(" Waiting on child. Child's exit status = %d.", childStatus);
+          log("Waiting on child. Child's exit status = OK");
           mergeSorter( coord, merger, i ); // get the data from our pipes array
         }
       }
