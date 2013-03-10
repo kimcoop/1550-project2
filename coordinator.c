@@ -1,4 +1,30 @@
 
+Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char* sortProgram  ) {
+
+  log("Initializing coordinator node.");
+  Coordinator *coord =  (Coordinator*) malloc( sizeof( Coordinator )+1 );
+  strcpy( coord->filename, filename );
+  strcpy( coord->sortProgram, sortProgram );
+  coord->numWorkers = numWorkers;
+  coord->sortAttr = sortAttr;
+  switch ( sortAttr ) {
+    case KEY_SSN:
+      strcpy( coord->sortType, "int" ); // SSN
+      break;
+    case KEY_LASTNAME:
+      strcpy( coord->sortType, "string" ); // firstName
+      break;
+    case KEY_FIRSTNAME:
+      strcpy( coord->sortType, "string" ); // lastName
+      break;
+    case KEY_INCOME:
+      strcpy( coord->sortType, "int" ); // income
+      break;
+    default:
+      strcpy( coord->sortType, "int" );
+  }
+  return coord;
+} // initCoordinator
 
 long numRecsPerSorter( Coordinator* coord ) {
   FILE* fp = fopen( coord->filename, "r" );
@@ -54,30 +80,3 @@ void deploySorters( Merger* merger, Coordinator* coord ) {
     }
   } // recsPerSorter > 0
 } // deploySorters
-
-Coordinator* initCoordinator( char* filename, int numWorkers, int sortAttr, char* sortProgram  ) {
-
-  log("Initializing coordinator node.");
-  Coordinator *coord =  (Coordinator*) malloc( sizeof( Coordinator )+1 );
-  strcpy( coord->filename, filename );
-  strcpy( coord->sortProgram, sortProgram );
-  coord->numWorkers = numWorkers;
-  coord->sortAttr = sortAttr;
-  switch ( sortAttr ) {
-    case KEY_SSN:
-      strcpy( coord->sortType, "int" ); // SSN
-      break;
-    case KEY_LASTNAME:
-      strcpy( coord->sortType, "string" ); // firstName
-      break;
-    case KEY_FIRSTNAME:
-      strcpy( coord->sortType, "string" ); // lastName
-      break;
-    case KEY_INCOME:
-      strcpy( coord->sortType, "int" ); // income
-      break;
-    default:
-      strcpy( coord->sortType, "int" );
-  }
-  return coord;
-} // initCoordinator

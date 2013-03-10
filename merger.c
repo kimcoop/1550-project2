@@ -1,6 +1,7 @@
-Merger* initMerger( int numWorkers ) {
+Merger* initMerger( char* outputFile, int numWorkers ) {
   log("Initializing merger node.");
   Merger* merger = ( Merger* ) malloc( sizeof( Merger) +1 );
+  strcpy( merger->outputFile, outputFile );
   int **pipes = generatePipes( numWorkers );
   merger->pipes = pipes;
   merger->numFinished = 0;
@@ -24,7 +25,7 @@ void mergeSorter( Coordinator* coord, Merger* merger, int index ) {
   close( merger->pipes[ index ][WRITE] );
   char buffer[BUFFER_SIZE];
   read( merger->pipes[ index ][READ], buffer, BUFFER_SIZE );
-  writeToFile( OUTFILE, buffer );
+  writeToFile( merger->outputFile, buffer );
   close( merger->pipes[ index ][READ] );
 
   merger->numFinished = merger->numFinished + 1; // increment

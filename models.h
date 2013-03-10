@@ -30,6 +30,7 @@ typedef struct {
 } Sorter;
 
 typedef struct{
+	char outputFile[FILENAME_BUFF_SIZE];
 	int numFinished;
 	int **pipes;
 } Merger;

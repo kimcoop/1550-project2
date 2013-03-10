@@ -13,7 +13,6 @@ Due March 07, 2013
 #include <stdlib.h>
 #include <string.h>
 #include  "my_header.h"
-#include  "my_pipes.c"
 #include  "coordinator.c"
 #include  "merger.c"
 #include  "sorter.c"
@@ -58,9 +57,20 @@ int main( int argc, char *argv[] ) {
   numWorkers = NUM_WORKERS;
   sortAttr = SORT_ATTR;
 
-  if ( numFlags % 2 != 0 ) {
-    println( "Malformed flags. Please re-enter." );
-    return EXIT_FAILURE;
+  if ( numFlags % 2 != 0 || argc == 1 ) { // --help for help
+
+    strcpy( flagValue, argv[ 1 ] );
+    if ( !strEqual( flagValue, "--defaults") && !strEqual( flagValue, "-defaults") && !strEqual( flagValue, "--d")) { // --defaults or -defaults or --d for default values
+      println("Flags:");
+      println( " -s \t output file name");
+      println( " -i \t input file name");
+      println( " -k \t number of workers");
+      println( " -e \t executable name");
+      println( " -t \t type");
+      println( " -a \t attribute (0-3)");
+      println( " -o \t order");
+      return EXIT_FAILURE;
+    }
   } else { // overwrite defaults
     
     int i;
@@ -94,7 +104,7 @@ int main( int argc, char *argv[] ) {
   println("");
 
   Coordinator* coord = initCoordinator( filename, numWorkers, sortAttr, executableName );
-  Merger* merger = initMerger( numWorkers );
+  Merger* merger = initMerger( outputFile, numWorkers );
 
   if ( signal(SIGUSR1, sigHandler) == SIG_ERR ) {
     println("An error occurred while setting a signal handler.");

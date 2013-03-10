@@ -51,7 +51,7 @@ int structCompIncome( const void *, const void *  );
 void sortRecords( MyRecord**, int, int );
 
 /* MERGER */
-Merger* initMerger( int );
+Merger* initMerger( char*, int );
 void writeToFile( char*, char* );
 int **generatePipes( int );
 void mergeSorter( Coordinator*, Merger*, int );

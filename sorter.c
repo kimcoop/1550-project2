@@ -1,20 +1,4 @@
 
-
-void writeToPipe( MyRecord** records, int file, int len, int attr ) {
-  log("Writing ordered records to pipe.");
-  FILE *stream = fdopen( file, "w" );
-  
-  int i;
-  if ( DEBUG ) fprintf( stream, "Sort attribute: %d\n", attr );
-  for ( i = 0; i < len; i++ ) {
-    MyRecord* rec = (MyRecord*) records[i];
-    fprintf( stream, "%d %s %s %d\n", rec->ssn, rec->LastName, rec->FirstName, rec->income);
-  }
-
-   fclose( stream );
- }
-
-
 Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
 
   Sorter* sorter = ( Sorter* ) malloc( sizeof(Sorter) + 1 );
@@ -28,6 +12,21 @@ Sorter* initSorter( Coordinator* coord, int numRecsPerSorter, int pos ) {
   return sorter;
 
 } // initSorter
+
+void writeToPipe( MyRecord** records, int file, int len, int attr ) {
+  log("Writing ordered records to pipe.");
+  FILE *stream = fdopen( file, "w" );
+  
+  int i;
+  if ( DEBUG ) fprintf( stream, "Sort attribute: %d\n", attr );
+  for ( i = 0; i < len; i++ ) {
+    MyRecord* rec = (MyRecord*) records[i];
+    fprintf( stream, "%d %s %s %d\n", rec->ssn, rec->LastName, rec->FirstName, rec->income);
+  }
+
+   fclose( stream );
+} // writeToPipe
+
 
 void deploySorter( int* myPipe, Sorter* sorter ) {
 
@@ -44,7 +43,7 @@ void deploySorter( int* myPipe, Sorter* sorter ) {
       MyRecord* recordPtr = ( MyRecord* ) malloc( sizeof( MyRecord)+1 );
       MyRecord record;
       fscanf( fp, "%d %s %s %d", &record.ssn, record.LastName, record.FirstName, &record.income);
-      if ( numRecsSkipped >= sorter->begin ) { // hacky, should use fseek if possible
+      if ( numRecsSkipped >= sorter->begin ) { // TODO: hacky, should use fseek if possible
         recordPtr->ssn = record.ssn;
         strcpy( recordPtr->LastName, record.LastName );
         strcpy( recordPtr->FirstName, record.FirstName );
